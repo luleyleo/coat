@@ -1,12 +1,17 @@
-pub use druid_shell as shell;
-pub use shell::{kurbo, piet};
+#![allow(unused_variables)]
+#![allow(dead_code)]
 
-pub mod event;
-pub mod mouse;
-pub mod context;
-pub mod render;
-pub mod window;
+pub use druid::{kurbo, piet};
+
 pub mod app;
+pub mod context;
+pub mod cx;
+pub mod event;
+pub mod id;
+pub mod key;
+pub mod render;
+pub mod tree;
+pub mod widgets;
 
 mod box_constraints;
 pub use box_constraints::BoxConstraints;

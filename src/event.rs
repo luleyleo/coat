@@ -16,9 +16,9 @@
 
 use crate::kurbo::{Rect, Shape, Size, Vec2};
 
-use druid_shell::{Clipboard, KeyEvent, TimerToken};
+use druid::{Clipboard, KeyEvent, TimerToken};
 
-use crate::mouse::MouseEvent;
+use druid::MouseEvent;
 
 /// An event, propagated downwards during event flow.
 ///
@@ -202,6 +202,7 @@ pub enum LifeCycle {
     /// [`WidgetPod`]: struct.WidgetPod.html
     /// [`LifeCycleCtx::register_for_focus`]: struct.LifeCycleCtx.html#method.register_for_focus
     WidgetAdded,
+    WidgetRemoved,
     /// Called when the [`Size`] of the widget changes.
     ///
     /// This will be called after [`Widget::layout`], if the [`Size`] returned
@@ -209,7 +210,7 @@ pub enum LifeCycle {
     ///
     /// [`Size`]: struct.Size.html
     /// [`Widget::layout`]: trait.Widget.html#tymethod.layout
-    Size(Size),
+    SizeChanged(Size),
     /// Called when the "hot" status changes.
     ///
     /// This will always be called _before_ the event that triggered it; that is,
@@ -307,8 +308,10 @@ impl LifeCycle {
     /// (for example the hidden tabs in a tabs widget).
     pub fn should_propagate_to_hidden(&self) -> bool {
         match self {
-            LifeCycle::WidgetAdded => true,
-            LifeCycle::Size(_) | LifeCycle::HotChanged(_) | LifeCycle::FocusChanged(_) => false,
+            LifeCycle::WidgetAdded | LifeCycle::WidgetRemoved => true,
+            LifeCycle::SizeChanged(_) | LifeCycle::HotChanged(_) | LifeCycle::FocusChanged(_) => {
+                false
+            }
         }
     }
 }
