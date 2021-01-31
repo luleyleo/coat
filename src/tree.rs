@@ -26,11 +26,11 @@ pub struct Child {
     pub(crate) key: Caller,
     pub(crate) object: Box<dyn AnyRenderObject>,
     pub(crate) children: Children,
-    pub(crate) state: RenderState,
+    pub(crate) state: ChildState,
     pub(crate) dead: bool,
 }
 
-pub struct RenderState {
+pub struct ChildState {
 
     pub(crate) actions: Vec<Box<dyn Any>>,
 
@@ -239,9 +239,9 @@ impl<'a> IntoIterator for &'a mut Children {
     }
 }
 
-impl RenderState {
+impl ChildState {
     pub(crate) fn new(id: ChildId, size: Option<Size>) -> Self {
-        RenderState {
+        ChildState {
             id,
             actions: Vec::new(),
             origin: Point::ORIGIN,
@@ -279,7 +279,7 @@ impl RenderState {
     /// This will also clear some requests in the child state.
     ///
     /// This method is idempotent and can be called multiple times.
-    fn merge_up(&mut self, child_state: &mut RenderState) {
+    fn merge_up(&mut self, child_state: &mut ChildState) {
         let clip = self
             .layout_rect()
             .with_origin(Point::ORIGIN)

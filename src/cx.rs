@@ -1,18 +1,30 @@
-use crate::{context::UpdateCtx, id::ChildCounter, key::Caller, render::{AnyRenderObject, RenderObject}, tree::{Child, RenderState, State, Children}};
+use crate::{
+    context::{ContextState, UpdateCtx},
+    id::ChildCounter,
+    key::Caller,
+    render::{AnyRenderObject, RenderObject},
+    tree::{Child, Children, ChildState, State},
+};
 use core::panic;
 use std::any::Any;
 
 pub struct Cx<'a> {
     tree: &'a mut Children,
+    state: &'a mut ContextState<'a>,
     child_counter: &'a mut ChildCounter,
     state_index: usize,
     render_index: usize,
 }
 
 impl<'a> Cx<'a> {
-    pub fn new(tree: &'a mut Children, child_counter: &'a mut ChildCounter) -> Self {
+    pub(crate) fn new(
+        tree: &'a mut Children,
+        state: &'a mut ContextState<'a>,
+        child_counter: &'a mut ChildCounter,
+    ) -> Self {
         Cx {
             tree,
+            state,
             child_counter,
             state_index: 0,
             render_index: 0,
@@ -114,7 +126,7 @@ impl<'a> Cx<'a> {
                 key: caller,
                 object,
                 children: Children::new(),
-                state: RenderState::new(self.child_counter.generate_id(), None),
+                state: ChildState::new(self.child_counter.generate_id(), None),
                 dead: false,
             },
         );

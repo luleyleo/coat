@@ -1,6 +1,6 @@
 use std::{any::Any, ops::{Deref, DerefMut}};
 
-use crate::{id::ChildId, tree::{CursorChange, FocusChange, RenderState}};
+use crate::{id::ChildId, tree::{CursorChange, FocusChange, ChildState}};
 use druid::{Affine, Cursor, ExtEventSink, Insets, Point, Rect, Region, RenderContext, Size, Vec2, WindowHandle, WindowId, piet::{Piet, PietText}};
 
 /// A macro for implementing methods on multiple contexts.
@@ -28,28 +28,30 @@ pub(crate) struct ContextState<'a> {
 }
 
 pub struct UpdateCtx<'a, 'b> {
-    druid_ctx: druid::UpdateCtx<'a, 'b>,
-    widget_state: &'a mut RenderState,
+    pub(crate) state: &'a mut ContextState<'b>,
+    pub(crate) child_state: &'a mut ChildState,
 }
 
 pub struct EventCtx<'a, 'b> {
-    druid_ctx: druid::EventCtx<'a, 'b>,
-    widget_state: &'a mut RenderState,
+    pub(crate) state: &'a mut ContextState<'b>,
+    pub(crate) child_state: &'a mut ChildState,
+    pub(crate) is_handled: bool,
+    pub(crate) is_root: bool,
 }
 
 pub struct LifeCycleCtx<'a, 'b> {
-    druid_ctx: druid::LifeCycleCtx<'a, 'b>,
-    widget_state: &'a mut RenderState,
+    pub(crate) state: &'a mut ContextState<'b>,
+    pub(crate) child_state: &'a mut ChildState,
 }
 
 pub struct LayoutCtx<'a, 'b> {
-    druid_ctx: druid::LayoutCtx<'a, 'b>,
-    widget_state: &'a mut RenderState,
+    pub(crate) state: &'a mut ContextState<'b>,
+    pub(crate) child_state: &'a mut ChildState,
 }
 
 pub struct PaintCtx<'a, 'b, 'c> {
-    widget_state: &'a RenderState,
-    context_state: &'a mut ContextState<'b>,
+    pub(crate) state: &'a mut ContextState<'b>,
+    pub(crate) child_state: &'a ChildState,
     /// The render context for actually painting.
     pub render_ctx: &'a mut Piet<'c>,
     /// The z-order paint operations.
@@ -67,55 +69,32 @@ pub(crate) struct ZOrderPaintOp {
     pub transform: Affine,
 }
 
-// methods on everyone (PaintCtx has no druid_ctx)
-impl_context_method!(PaintCtx<'_, '_, '_>, {
-        /// get the `ChildId` of the current widget.
-        pub fn child_id(&self) -> ChildId {
-            self.widget_state.id
-        }
-
-        /// Returns a reference to the current `WindowHandle`.
-        pub fn window(&self) -> &WindowHandle {
-            &self.context_state.window
-        }
-
-        /// Get the `WindowId` of the current window.
-        pub fn window_id(&self) -> WindowId {
-            self.context_state.window_id
-        }
-
-        /// Get an object which can create text layouts.
-        pub fn text(&mut self) -> &mut PietText {
-            &mut self.context_state.text
-        }
-    }
-);
-
 // methods on everyone
 impl_context_method!(
     EventCtx<'_, '_>,
     UpdateCtx<'_, '_>,
     LifeCycleCtx<'_, '_>,
     LayoutCtx<'_, '_>,
+    PaintCtx<'_, '_, '_>,
     {
         /// get the `ChildId` of the current widget.
         pub fn child_id(&self) -> ChildId {
-            self.widget_state.id
+            self.child_state.id
         }
 
         /// Returns a reference to the current `WindowHandle`.
         pub fn window(&self) -> &WindowHandle {
-            &self.druid_ctx.window()
+            &self.state.window
         }
 
         /// Get the `WindowId` of the current window.
         pub fn window_id(&self) -> WindowId {
-            self.druid_ctx.window_id()
+            self.state.window_id
         }
 
         /// Get an object which can create text layouts.
         pub fn text(&mut self) -> &mut PietText {
-            self.druid_ctx.text()
+            &mut self.state.text
         }
     }
 );
@@ -143,7 +122,7 @@ impl_context_method!(
         /// example, when clicking to one widget and dragging to the next).
         /// The documentation should clearly state the resolution.
         pub fn is_hot(&self) -> bool {
-            self.widget_state.is_hot
+            self.child_state.is_hot
         }
 
         /// The active status of a widget.
@@ -157,7 +136,7 @@ impl_context_method!(
         ///
         /// [`set_active`]: struct.EventCtx.html#method.set_active
         pub fn is_active(&self) -> bool {
-            self.widget_state.is_active
+            self.child_state.is_active
         }
 
         /// The focus status of a widget.
@@ -191,7 +170,7 @@ impl_context_method!(
         ///
         /// [`is_focused`]: #method.is_focused
         pub fn has_focus(&self) -> bool {
-            self.widget_state.has_focus
+            self.child_state.has_focus
         }
     }
 );
@@ -213,13 +192,13 @@ impl_context_method!(
         ///
         /// [`layout`]: trait.Widget.html#tymethod.layout
         pub fn size(&self) -> Size {
-            self.widget_state.size()
+            self.child_state.size()
         }
 
         /// The origin of the widget in window coordinates, relative to the top left corner of the
         /// content area.
         pub fn window_origin(&self) -> Point {
-            self.widget_state.window_origin()
+            self.child_state.window_origin()
         }
 
         /// Convert a point from the widget's coordinate space to the window's.
@@ -236,7 +215,9 @@ impl_context_method!(
         ///
         /// [`Screen`]: crate::shell::Screen
         pub fn to_screen(&self, widget_point: Point) -> Point {
-            self.druid_ctx.to_screen(widget_point)
+            let insets = self.window().content_insets();
+            let content_origin = self.window().get_position() + Vec2::new(insets.x0, insets.y0);
+            content_origin + self.to_window(widget_point).to_vec2()
         }
 
         */
@@ -256,7 +237,7 @@ impl_context_method!(EventCtx<'_, '_>, UpdateCtx<'_, '_>, {
     /// [`hot`]: EventCtx::is_hot
     /// [`active`]: EventCtx::is_active
     pub fn set_cursor(&mut self, cursor: &Cursor) {
-        self.widget_state.cursor_change = CursorChange::Set(cursor.clone());
+        self.child_state.cursor_change = CursorChange::Set(cursor.clone());
     }
 
     /// Override the cursor icon.
@@ -270,7 +251,7 @@ impl_context_method!(EventCtx<'_, '_>, UpdateCtx<'_, '_>, {
     /// [`hot`]: EventCtx::is_hot
     /// [`active`]: EventCtx::is_active
     pub fn override_cursor(&mut self, cursor: &Cursor) {
-        self.widget_state.cursor_change = CursorChange::Override(cursor.clone());
+        self.child_state.cursor_change = CursorChange::Override(cursor.clone());
     }
 
     /// Clear the cursor icon.
@@ -280,7 +261,7 @@ impl_context_method!(EventCtx<'_, '_>, UpdateCtx<'_, '_>, {
     /// [`override_cursor`]: EventCtx::override_cursor
     /// [`set_cursor`]: EventCtx::set_cursor
     pub fn clear_cursor(&mut self) {
-        self.widget_state.cursor_change = CursorChange::Default;
+        self.child_state.cursor_change = CursorChange::Default;
     }
 });
 
@@ -293,8 +274,8 @@ impl_context_method!(EventCtx<'_, '_>, UpdateCtx<'_, '_>, LifeCycleCtx<'_, '_>, 
     /// [`request_paint_rect`]: #method.request_paint_rect
     /// [`paint_rect`]: struct.WidgetPod.html#method.paint_rect
     pub fn request_paint(&mut self) {
-        self.widget_state.invalid.set_rect(
-            self.widget_state.paint_rect() - self.widget_state.layout_rect().origin().to_vec2(),
+        self.child_state.invalid.set_rect(
+            self.child_state.paint_rect() - self.child_state.layout_rect().origin().to_vec2(),
         );
     }
 
@@ -303,7 +284,7 @@ impl_context_method!(EventCtx<'_, '_>, UpdateCtx<'_, '_>, LifeCycleCtx<'_, '_>, 
     ///
     /// [`paint`]: trait.Widget.html#tymethod.paint
     pub fn request_paint_rect(&mut self, rect: Rect) {
-        self.widget_state.invalid.add_rect(rect);
+        self.child_state.invalid.add_rect(rect);
     }
 
     /// Request a layout pass.
@@ -317,12 +298,12 @@ impl_context_method!(EventCtx<'_, '_>, UpdateCtx<'_, '_>, LifeCycleCtx<'_, '_>, 
     ///
     /// [`layout`]: trait.Widget.html#tymethod.layout
     pub fn request_layout(&mut self) {
-        self.widget_state.needs_layout = true;
+        self.child_state.needs_layout = true;
     }
 
     /// Request an animation frame.
     pub fn request_anim_frame(&mut self) {
-        self.widget_state.request_anim = true;
+        self.child_state.request_anim = true;
     }
 
     /*
@@ -331,7 +312,7 @@ impl_context_method!(EventCtx<'_, '_>, UpdateCtx<'_, '_>, LifeCycleCtx<'_, '_>, 
     ///
     /// Widgets must call this method after adding a new child.
     pub fn children_changed(&mut self) {
-        self.widget_state.children_changed = true;
+        self.child_state.children_changed = true;
         self.request_layout();
     }
 
@@ -361,7 +342,7 @@ impl_context_method!(EventCtx<'_, '_>, UpdateCtx<'_, '_>, LifeCycleCtx<'_, '_>, 
     ) -> WindowId {
         let req = SubWindowDesc::new(self.widget_id(), window_config, widget, data, env);
         let window_id = req.window_id;
-        self.widget_state
+        self.child_state
             .add_sub_window_host(window_id, req.host_id);
         self.submit_command(commands::NEW_SUB_WINDOW.with(SingleUse::new(req)));
         window_id
@@ -381,7 +362,7 @@ impl_context_method!(
     {
         /// Submit an Action
         pub fn submit_action<A: Any>(&mut self, action: A) {
-            self.widget_state.actions.push(Box::new(action));
+            self.child_state.actions.push(Box::new(action));
         }
     }
 );
@@ -423,7 +404,7 @@ impl_context_method!(
         /// The return value is a token, which can be used to associate the
         /// request with the event.
         pub fn request_timer(&mut self, deadline: Duration) -> TimerToken {
-            self.state.request_timer(&mut self.widget_state, deadline)
+            self.state.request_timer(&mut self.child_state, deadline)
         }
     }
 );
@@ -458,7 +439,7 @@ impl EventCtx<'_, '_> {
     ///
     /// [`Selector`]: crate::Selector
     pub fn submit_notification(&mut self, note: impl Into<Command>) {
-        let note = note.into().into_notification(self.widget_state.id);
+        let note = note.into().into_notification(self.child_state.id);
         self.notifications.push_back(note);
     }
 
@@ -468,7 +449,7 @@ impl EventCtx<'_, '_> {
     ///
     /// See [`EventCtx::is_active`](struct.EventCtx.html#method.is_active).
     pub fn set_active(&mut self, active: bool) {
-        self.widget_state.is_active = active;
+        self.child_state.is_active = active;
         // TODO: plumb mouse grab through to platform (through druid-shell)
     }
 
@@ -513,12 +494,12 @@ impl EventCtx<'_, '_> {
     /// Set the event as "handled", which stops its propagation to other
     /// widgets.
     pub fn set_handled(&mut self) {
-        self.druid_ctx.set_handled()
+        self.is_handled = true;
     }
 
     /// Determine whether the event has been handled by some other widget.
     pub fn is_handled(&self) -> bool {
-        self.druid_ctx.is_handled()
+        self.is_handled
     }
 
     /// Request keyboard focus.
@@ -536,7 +517,7 @@ impl EventCtx<'_, '_> {
         // and we have no way of knowing that yet. We need to override that
         // to deliver on the "last focus request wins" promise.
         let id = self.child_id();
-        self.widget_state.request_focus = Some(FocusChange::Focus(id));
+        self.child_state.request_focus = Some(FocusChange::Focus(id));
     }
 
     /// Transfer focus to the widget with the given `WidgetId`.
@@ -545,7 +526,7 @@ impl EventCtx<'_, '_> {
     ///
     /// [`is_focused`]: struct.EventCtx.html#method.is_focused
     pub fn set_focus(&mut self, target: ChildId) {
-        self.widget_state.request_focus = Some(FocusChange::Focus(target));
+        self.child_state.request_focus = Some(FocusChange::Focus(target));
     }
 
     /// Transfer focus to the next focusable widget.
@@ -557,7 +538,7 @@ impl EventCtx<'_, '_> {
     /// [`is_focused`]: struct.EventCtx.html#method.is_focused
     pub fn focus_next(&mut self) {
         if self.is_focused() {
-            self.widget_state.request_focus = Some(FocusChange::Next);
+            self.child_state.request_focus = Some(FocusChange::Next);
         } else {
             log::warn!("focus_next can only be called by the currently focused widget");
         }
@@ -572,7 +553,7 @@ impl EventCtx<'_, '_> {
     /// [`is_focused`]: struct.EventCtx.html#method.is_focused
     pub fn focus_prev(&mut self) {
         if self.is_focused() {
-            self.widget_state.request_focus = Some(FocusChange::Previous);
+            self.child_state.request_focus = Some(FocusChange::Previous);
         } else {
             log::warn!("focus_prev can only be called by the currently focused widget");
         }
@@ -587,7 +568,7 @@ impl EventCtx<'_, '_> {
     /// [`is_focused`]: struct.EventCtx.html#method.is_focused
     pub fn resign_focus(&mut self) {
         if self.is_focused() {
-            self.widget_state.request_focus = Some(FocusChange::Resign);
+            self.child_state.request_focus = Some(FocusChange::Resign);
         } else {
             log::warn!(
                 "resign_focus can only be called by the currently focused widget ({:?})",
@@ -606,7 +587,7 @@ impl EventCtx<'_, '_> {
     /// method, consider whether it might be better to refactor to be more idiomatic, in
     /// particular to make that data available in the app state.
     pub fn request_update(&mut self) {
-        self.widget_state.request_update = true;
+        self.child_state.request_update = true;
     }
 }
 
@@ -619,7 +600,7 @@ impl UpdateCtx<'_, '_> {
     ///
     /// [`EventCtx::request_update`]: struct.EventCtx.html#method.request_update
     pub fn has_requested_update(&mut self) -> bool {
-        self.widget_state.request_update
+        self.child_state.request_update
     }
 }
 
@@ -635,7 +616,7 @@ impl LifeCycleCtx<'_, '_> {
     /// [`LifeCycle::WidgetAdded`]: enum.Lifecycle.html#variant.WidgetAdded
     /// [`EventCtx::is_focused`]: struct.EventCtx.html#method.is_focused
     pub fn register_for_focus(&mut self) {
-        self.widget_state.focus_chain.push(self.child_id());
+        self.child_state.focus_chain.push(self.child_id());
     }
 
     */
@@ -654,7 +635,7 @@ impl LayoutCtx<'_, '_> {
     /// [`Insets`]: struct.Insets.html
     /// [`WidgetPod::paint_insets`]: struct.WidgetPod.html#method.paint_insets
     pub fn set_paint_insets(&mut self, insets: impl Into<Insets>) {
-        self.widget_state.paint_insets = insets.into().nonnegative();
+        self.child_state.paint_insets = insets.into().nonnegative();
     }
 
     /// Set an explicit baseline position for this widget.
@@ -667,7 +648,7 @@ impl LayoutCtx<'_, '_> {
     /// The provided value should be the distance from the *bottom* of the
     /// widget to the baseline.
     pub fn set_baseline_offset(&mut self, baseline: f64) {
-        self.widget_state.baseline_offset = baseline
+        self.child_state.baseline_offset = baseline
     }
 }
 
@@ -699,8 +680,8 @@ impl PaintCtx<'_, '_, '_> {
     /// visible region given their layout.
     pub fn with_child_ctx(&mut self, region: impl Into<Region>, f: impl FnOnce(&mut PaintCtx)) {
         let mut child_ctx = PaintCtx {
-            widget_state: self.widget_state,
-            context_state: self.context_state,
+            child_state: self.child_state,
+            state: self.state,
             render_ctx: self.render_ctx,
             z_ops: Vec::new(),
             region: region.into(),
@@ -799,9 +780,9 @@ impl<'a> ContextState<'a> {
         }
     }
 
-    fn request_timer(&self, widget_state: &mut WidgetState, deadline: Duration) -> TimerToken {
+    fn request_timer(&self, child_state: &mut WidgetState, deadline: Duration) -> TimerToken {
         let timer_token = self.window.request_timer(deadline);
-        widget_state.add_timer(timer_token);
+        child_state.add_timer(timer_token);
         timer_token
     }
 }
