@@ -3,6 +3,8 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 
+use std::any::Any;
+
 pub use druid::{kurbo, piet};
 
 pub mod app;

@@ -1,3 +1,5 @@
+use std::{any::Any, ops::{Deref, DerefMut}};
+
 use crate::{id::ChildId, tree::{CursorChange, FocusChange, RenderState}};
 use druid::{Affine, Cursor, ExtEventSink, Insets, Point, Rect, Region, RenderContext, Size, Vec2, WindowHandle, WindowId, piet::{Piet, PietText}};
 
@@ -65,7 +67,6 @@ pub(crate) struct ZOrderPaintOp {
     pub transform: Affine,
 }
 
-
 // methods on everyone (PaintCtx has no druid_ctx)
 impl_context_method!(PaintCtx<'_, '_, '_>, {
         /// get the `ChildId` of the current widget.
@@ -119,47 +120,14 @@ impl_context_method!(
     }
 );
 
-// methods on everyone but layoutctx
+// methods on everyone
 impl_context_method!(
     EventCtx<'_, '_>,
     UpdateCtx<'_, '_>,
     LifeCycleCtx<'_, '_>,
+    LayoutCtx<'_, '_>,
     PaintCtx<'_, '_, '_>,
     {
-        /// The layout size.
-        ///
-        /// This is the layout size as ultimately determined by the parent
-        /// container, on the previous layout pass.
-        ///
-        /// Generally it will be the same as the size returned by the child widget's
-        /// [`layout`] method.
-        ///
-        /// [`layout`]: trait.Widget.html#tymethod.layout
-        pub fn size(&self) -> Size {
-            self.widget_state.size()
-        }
-
-        /// The origin of the widget in window coordinates, relative to the top left corner of the
-        /// content area.
-        pub fn window_origin(&self) -> Point {
-            self.widget_state.window_origin()
-        }
-
-        /// Convert a point from the widget's coordinate space to the window's.
-        ///
-        /// The returned point is relative to the content area; it excludes window chrome.
-        pub fn to_window(&self, widget_point: Point) -> Point {
-            self.window_origin() + widget_point.to_vec2()
-        }
-
-        /// Convert a point from the widget's coordinate space to the screen's.
-        /// See the [`Screen`] module
-        ///
-        /// [`Screen`]: crate::shell::Screen
-        // pub fn to_screen(&self, widget_point: Point) -> Point {
-        //     self.druid_ctx.to_screen(widget_point)
-        // }
-
         /// The "hot" (aka hover) status of a widget.
         ///
         /// A widget is "hot" when the mouse is hovered over it. Widgets will
@@ -225,6 +193,53 @@ impl_context_method!(
         pub fn has_focus(&self) -> bool {
             self.widget_state.has_focus
         }
+    }
+);
+
+// methods on everyone but layoutctx
+impl_context_method!(
+    EventCtx<'_, '_>,
+    UpdateCtx<'_, '_>,
+    LifeCycleCtx<'_, '_>,
+    PaintCtx<'_, '_, '_>,
+    {
+        /// The layout size.
+        ///
+        /// This is the layout size as ultimately determined by the parent
+        /// container, on the previous layout pass.
+        ///
+        /// Generally it will be the same as the size returned by the child widget's
+        /// [`layout`] method.
+        ///
+        /// [`layout`]: trait.Widget.html#tymethod.layout
+        pub fn size(&self) -> Size {
+            self.widget_state.size()
+        }
+
+        /// The origin of the widget in window coordinates, relative to the top left corner of the
+        /// content area.
+        pub fn window_origin(&self) -> Point {
+            self.widget_state.window_origin()
+        }
+
+        /// Convert a point from the widget's coordinate space to the window's.
+        ///
+        /// The returned point is relative to the content area; it excludes window chrome.
+        pub fn to_window(&self, widget_point: Point) -> Point {
+            self.window_origin() + widget_point.to_vec2()
+        }
+
+        /*
+
+        /// Convert a point from the widget's coordinate space to the screen's.
+        /// See the [`Screen`] module
+        ///
+        /// [`Screen`]: crate::shell::Screen
+        pub fn to_screen(&self, widget_point: Point) -> Point {
+            self.druid_ctx.to_screen(widget_point)
+        }
+
+        */
     }
 );
 
@@ -355,6 +370,21 @@ impl_context_method!(EventCtx<'_, '_>, UpdateCtx<'_, '_>, LifeCycleCtx<'_, '_>, 
     */
 
 });
+
+
+// methods on everyone but paintctx
+impl_context_method!(
+    EventCtx<'_, '_>,
+    UpdateCtx<'_, '_>,
+    LifeCycleCtx<'_, '_>,
+    LayoutCtx<'_, '_>,
+    {
+        /// Submit an Action
+        pub fn submit_action<A: Any>(&mut self, action: A) {
+            self.widget_state.actions.push(Box::new(action));
+        }
+    }
+);
 
 /*
 
@@ -776,6 +806,8 @@ impl<'a> ContextState<'a> {
     }
 }
 
+*/
+
 impl<'c> Deref for PaintCtx<'_, '_, 'c> {
     type Target = Piet<'c>;
 
@@ -789,5 +821,3 @@ impl<'c> DerefMut for PaintCtx<'_, '_, 'c> {
         self.render_ctx
     }
 }
-
-*/

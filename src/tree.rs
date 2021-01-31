@@ -1,4 +1,4 @@
-use std::any::Any;
+use std::{any::Any, ops::{Index, IndexMut}};
 
 use druid::{Cursor, Insets, Point, Rect, Region, Size, Vec2};
 
@@ -155,16 +155,26 @@ impl Children {
         self.len() == 0
     }
 
-    pub fn get(&self, index: usize) -> Option<&dyn AnyRenderObject> {
-        self.renders
-            .get(index)
-            .map(|node| node.object.as_ref())
+    pub fn get(&self, index: usize) -> Option<&Child> {
+        self.renders.get(index)
     }
 
-    pub fn get_mut(&mut self, index: usize) -> Option<&mut dyn AnyRenderObject> {
-        self.renders
-            .get_mut(index)
-            .map(|node| node.object.as_mut())
+    pub fn get_mut(&mut self, index: usize) -> Option<&mut Child> {
+        self.renders.get_mut(index)
+    }
+}
+
+impl Index<usize> for Children {
+    type Output = Child;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.renders[index]
+    }
+}
+
+impl IndexMut<usize> for Children {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.renders[index]
     }
 }
 
@@ -182,13 +192,17 @@ impl Child {
         &mut self,
         ctx: &mut LayoutCtx,
         bc: &BoxConstraints,
-        children: &mut Children,
     ) -> Size {
         self.object.layout(ctx, bc, &mut self.children)
     }
 
-    pub fn paint(&mut self, ctx: &mut PaintCtx, children: &mut Children) {
+    pub fn paint(&mut self, ctx: &mut PaintCtx) {
         self.object.paint(ctx, &mut self.children)
+    }
+
+    /// The distance from the bottom of this widget to the baseline.
+    pub fn baseline_offset(&self) -> f64 {
+        self.state.baseline_offset
     }
 }
 
