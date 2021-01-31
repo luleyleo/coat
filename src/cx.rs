@@ -3,10 +3,10 @@ use crate::{
     id::ChildCounter,
     key::Caller,
     render::{AnyRenderObject, RenderObject},
-    tree::{Child, Children, ChildState, State},
+    tree::{Child, ChildState, Children, State},
 };
 use core::panic;
-use std::any::Any;
+use std::any::{type_name, Any};
 
 pub struct Cx<'a> {
     tree: &'a mut Children,
@@ -63,28 +63,32 @@ impl<'a> Cx<'a> {
     where
         R: RenderObject + Default + Any,
     {
-        let mut ctx = todo!();
-        let index = self.find_render_object(caller);
-        if let Some(index) = index {
-            for node in &mut self.tree.renders[self.state_index..index] {
-                node.dead = true;
+        let index = match self.find_render_object(caller) {
+            Some(index) => index,
+            None => {
+                self.insert_render_object(caller, Box::new(R::default()));
+                self.find_render_object(caller).unwrap()
             }
-            let node = &mut self.tree.renders[index];
-            if let Some(object) = node.object.as_any().downcast_mut::<R>() {
-                object.update(&mut ctx, props);
-            } else {
-                // TODO: Think of something smart
-            }
-            node.state
-                .actions
-                .pop()
-                .and_then(|action| action.downcast::<R::Action>().ok().map(|action| *action))
-        } else {
-            let mut object = R::default();
-            object.update(&mut ctx, props);
-            self.insert_render_object(caller, Box::new(object));
-            None
+        };
+        for node in &mut self.tree.renders[self.render_index..index] {
+            node.dead = true;
         }
+        let node = &mut self.tree.renders[index];
+        if let Some(object) = node.object.as_any().downcast_mut::<R>() {
+            let mut ctx = UpdateCtx {
+                state: self.state,
+                child_state: &mut node.state,
+            };
+            object.update(&mut ctx, props);
+        } else {
+            // TODO: Think of something smart
+            panic!("Wrong node type. Expected {}", std::any::type_name::<R>())
+        }
+        self.render_index = index + 1;
+        node.state
+            .actions
+            .pop()
+            .and_then(|action| action.downcast::<R::Action>().ok().map(|action| *action))
     }
 }
 
