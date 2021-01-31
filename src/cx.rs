@@ -1,17 +1,19 @@
-use crate::{context::UpdateCtx, key::Caller, render::{AnyRenderObject, RenderObject}, tree::{RenderNode, RenderState, StateNode, Tree}};
+use crate::{context::UpdateCtx, id::ChildCounter, key::Caller, render::{AnyRenderObject, RenderObject}, tree::{Child, RenderState, State, Children}};
 use core::panic;
 use std::any::Any;
 
 pub struct Cx<'a> {
-    tree: &'a mut Tree,
+    tree: &'a mut Children,
+    child_counter: &'a mut ChildCounter,
     state_index: usize,
     render_index: usize,
 }
 
 impl<'a> Cx<'a> {
-    pub fn new(tree: &'a mut Tree) -> Self {
+    pub fn new(tree: &'a mut Children, child_counter: &'a mut ChildCounter) -> Self {
         Cx {
             tree,
+            child_counter,
             state_index: 0,
             render_index: 0,
         }
@@ -33,7 +35,7 @@ impl<'a> Cx<'a> {
             node.dead = true;
         }
 
-        let node_prt = &mut self.tree.states[index] as *mut StateNode;
+        let node_prt = &mut self.tree.states[index] as *mut State;
         let node = unsafe { &mut *node_prt };
         self.state_index = index + 1;
 
@@ -49,7 +51,7 @@ impl<'a> Cx<'a> {
     where
         R: RenderObject + Default + Any,
     {
-        let mut ctx = UpdateCtx;
+        let mut ctx = todo!();
         let index = self.find_render_object(caller);
         if let Some(index) = index {
             for node in &mut self.tree.renders[self.state_index..index] {
@@ -91,7 +93,7 @@ impl<'a> Cx<'a> {
         let dead = false;
         self.tree
             .states
-            .insert(self.state_index, StateNode { key, state, dead });
+            .insert(self.state_index, State { key, state, dead });
     }
 
     fn find_render_object(&mut self, caller: Caller) -> Option<usize> {
@@ -108,11 +110,11 @@ impl<'a> Cx<'a> {
     fn insert_render_object(&mut self, caller: Caller, object: Box<dyn AnyRenderObject>) {
         self.tree.renders.insert(
             self.render_index,
-            RenderNode {
+            Child {
                 key: caller,
                 object,
-                children: Tree::new(),
-                state: RenderState::default(),
+                children: Children::new(),
+                state: RenderState::new(self.child_counter.generate_id(), None),
                 dead: false,
             },
         );

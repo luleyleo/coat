@@ -5,7 +5,8 @@ use crate::{
     cx::Cx,
     event::{Event, LifeCycle},
     kurbo::Size,
-    render::{Children, Properties, RenderObject},
+    render::{Properties, RenderObject},
+    tree::Children,
     BoxConstraints,
 };
 use druid::MouseButton;
@@ -88,7 +89,7 @@ impl RenderObject for ButtonObject {
             _ => {}
         }
 
-        for mut child in children {
+        for child in children {
             child.event(ctx, event);
         }
     }

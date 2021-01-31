@@ -1,4 +1,6 @@
 #![allow(unused_variables)]
+#![allow(unreachable_code)]
+#![allow(unused_imports)]
 #![allow(dead_code)]
 
 pub use druid::{kurbo, piet};
@@ -12,6 +14,7 @@ pub mod key;
 pub mod render;
 pub mod tree;
 pub mod widgets;
+pub mod bloom;
 
 mod box_constraints;
 pub use box_constraints::BoxConstraints;

@@ -8,5 +8,6 @@ edition = "2018"
 
 [dependencies]
 druid = "0.7.0"
+fnv = "1.0.7"
 log = "0.4.11"
 simple_logger = "1.11.0"
