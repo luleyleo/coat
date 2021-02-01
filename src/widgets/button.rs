@@ -11,7 +11,7 @@ const LABEL_INSETS: Insets = Insets::uniform_xy(8., 2.);
 
 #[derive(Default, PartialEq)]
 pub struct Button {
-    label: String,
+    label: Option<String>,
     disabled: bool,
     style: Option<Box<dyn StyleSheet>>,
 }
@@ -27,7 +27,7 @@ impl Button {
     }
 
     pub fn label(mut self, label: impl Into<String>) -> Self {
-        self.label = label.into();
+        self.label = Some(label.into());
         self
     }
 

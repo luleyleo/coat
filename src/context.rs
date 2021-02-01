@@ -22,7 +22,7 @@ pub(crate) struct ContextState<'a> {
     pub(crate) ext_handle: &'a ExtEventSink,
     pub(crate) window_id: WindowId,
     pub(crate) window: &'a WindowHandle,
-    pub(crate) text: PietText,
+    pub(crate) text: &'a mut PietText,
     /// The id of the widget that currently has focus.
     pub(crate) focus_widget: Option<ChildId>,
 }

@@ -10,7 +10,6 @@ pub use druid::{kurbo, piet};
 pub mod app;
 pub mod context;
 pub mod cx;
-pub mod event;
 pub mod id;
 pub mod key;
 pub mod render;
@@ -18,8 +17,13 @@ pub mod tree;
 pub mod widgets;
 pub mod bloom;
 
-mod box_constraints;
-pub use box_constraints::BoxConstraints;
+//pub mod event;
+pub mod event {
+    pub use druid::{Event, LifeCycle};
+}
+
+//mod box_constraints;
+pub use druid::BoxConstraints;
 
 pub trait VisualEq {
     /// Determine whether two values are the same.

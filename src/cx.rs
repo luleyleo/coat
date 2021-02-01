@@ -55,7 +55,7 @@ impl<'a> Cx<'a> {
             fun(self, state);
         } else {
             // TODO: Handle wrong type of state
-            panic!("Wrong type of state");
+            panic!("Wrong type of state. Expected {}", std::any::type_name::<T>());
         }
     }
 
