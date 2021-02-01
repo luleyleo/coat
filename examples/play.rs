@@ -1,4 +1,8 @@
-use coat::{app::App, cx::Cx, widgets::{button::Button, quad::Quad}};
+use coat::{
+    app::App,
+    cx::Cx,
+    widgets::{button::Button, quad::Quad},
+};
 use druid::Color;
 
 fn main() {

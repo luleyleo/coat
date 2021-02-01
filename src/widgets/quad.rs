@@ -1,9 +1,13 @@
 use std::panic::Location;
 
-use druid::{BoxConstraints, Color, Event, LifeCycle, Point, RenderContext, kurbo::Circle};
+use druid::{kurbo::Circle, BoxConstraints, Color, Event, LifeCycle, Point, RenderContext};
 
-use crate::{context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx}, cx::Cx, render::{Properties, RenderObject}, tree::Children};
-
+use crate::{
+    context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx},
+    cx::Cx,
+    render::{Properties, RenderObject},
+    tree::Children,
+};
 
 pub struct Quad {
     color: Color,
@@ -66,8 +70,12 @@ impl RenderObject for QuadObject {
         println!("Quad received lifecycle.");
     }
 
-    fn layout(&mut self, ctx: &mut LayoutCtx, bc: &BoxConstraints, children: &mut Children)
-        -> druid::Size {
+    fn layout(
+        &mut self,
+        ctx: &mut LayoutCtx,
+        bc: &BoxConstraints,
+        children: &mut Children,
+    ) -> druid::Size {
         bc.max()
     }
 

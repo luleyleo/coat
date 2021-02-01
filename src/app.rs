@@ -1,6 +1,12 @@
 use druid::{Application, ExtEventSink, WindowDesc};
 
-use crate::{context::{ContextState, EventCtx, LayoutCtx, PaintCtx}, cx::Cx, id::{ChildCounter, ChildId}, render::AnyRenderObject, tree::{Child, Children}};
+use crate::{
+    context::{ContextState, EventCtx, LayoutCtx, PaintCtx},
+    cx::Cx,
+    id::{ChildCounter, ChildId},
+    render::AnyRenderObject,
+    tree::{Child, Children},
+};
 
 pub struct App {
     name: String,

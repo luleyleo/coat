@@ -8,6 +8,7 @@ use std::any::Any;
 pub use druid::{kurbo, piet};
 
 pub mod app;
+pub mod bloom;
 pub mod context;
 pub mod cx;
 pub mod id;
@@ -15,7 +16,6 @@ pub mod key;
 pub mod render;
 pub mod tree;
 pub mod widgets;
-pub mod bloom;
 
 //pub mod event;
 pub mod event {

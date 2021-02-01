@@ -1,7 +1,17 @@
-use std::{any::Any, ops::{Deref, DerefMut}};
+use std::{
+    any::Any,
+    ops::{Deref, DerefMut},
+};
 
-use crate::{id::ChildId, tree::{CursorChange, FocusChange, ChildState}};
-use druid::{Affine, Cursor, ExtEventSink, Insets, Point, Rect, Region, RenderContext, Size, Vec2, WindowHandle, WindowId, piet::{Piet, PietText}};
+use crate::{
+    id::ChildId,
+    tree::{ChildState, CursorChange, FocusChange},
+};
+use druid::{
+    piet::{Piet, PietText},
+    Affine, Cursor, ExtEventSink, Insets, Point, Rect, Region, RenderContext, Size, Vec2,
+    WindowHandle, WindowId,
+};
 
 /// A macro for implementing methods on multiple contexts.
 ///
@@ -349,9 +359,7 @@ impl_context_method!(EventCtx<'_, '_>, UpdateCtx<'_, '_>, LifeCycleCtx<'_, '_>, 
     }
 
     */
-
 });
-
 
 // methods on everyone but paintctx
 impl_context_method!(
@@ -412,7 +420,6 @@ impl_context_method!(
 */
 
 impl EventCtx<'_, '_> {
-
     /*
 
     /// Submit a [`Notification`].

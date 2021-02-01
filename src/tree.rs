@@ -1,8 +1,19 @@
-use std::{any::Any, ops::{Index, IndexMut}};
+use std::{
+    any::Any,
+    ops::{Index, IndexMut},
+};
 
 use druid::{Cursor, Insets, Point, Rect, Region, Size, Vec2};
 
-use crate::{BoxConstraints, bloom::Bloom, context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx}, event::{Event, LifeCycle}, id::ChildId, key::Caller, render::AnyRenderObject};
+use crate::{
+    bloom::Bloom,
+    context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx},
+    event::{Event, LifeCycle},
+    id::ChildId,
+    key::Caller,
+    render::AnyRenderObject,
+    BoxConstraints,
+};
 
 #[derive(Default)]
 pub struct Children {
@@ -31,7 +42,6 @@ pub struct Child {
 }
 
 pub struct ChildState {
-
     pub(crate) actions: Vec<Box<dyn Any>>,
 
     pub(crate) id: ChildId,
@@ -91,7 +101,6 @@ pub struct ChildState {
     pub(crate) request_update: bool,
 
     //pub(crate) focus_chain: Vec<WidgetId>,
-
     pub(crate) request_focus: Option<FocusChange>,
 
     pub(crate) children: Bloom<ChildId>,
@@ -188,11 +197,7 @@ impl Child {
         self.object.lifecycle(ctx, event)
     }
 
-    pub fn layout(
-        &mut self,
-        ctx: &mut LayoutCtx,
-        bc: &BoxConstraints,
-    ) -> Size {
+    pub fn layout(&mut self, ctx: &mut LayoutCtx, bc: &BoxConstraints) -> Size {
         self.object.layout(ctx, bc, &mut self.children)
     }
 

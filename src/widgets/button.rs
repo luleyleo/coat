@@ -1,6 +1,14 @@
 use std::panic::Location;
 
-use crate::{BoxConstraints, VisualEq, context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx}, cx::Cx, event::{Event, LifeCycle}, kurbo::Size, render::{Properties, RenderObject}, tree::Children};
+use crate::{
+    context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx},
+    cx::Cx,
+    event::{Event, LifeCycle},
+    kurbo::Size,
+    render::{Properties, RenderObject},
+    tree::Children,
+    BoxConstraints, VisualEq,
+};
 use druid::{Affine, Insets, LinearGradient, MouseButton, RenderContext, UnitPoint};
 use style::{Style, StyleSheet};
 
@@ -222,7 +230,7 @@ pub mod style {
     }
 
     /// A set of rules that dictate the style of a button.
-    pub trait StyleSheet : Any {
+    pub trait StyleSheet: Any {
         fn eq(&self, other: &dyn StyleSheet) -> bool;
 
         fn enabled(&self) -> Style;
