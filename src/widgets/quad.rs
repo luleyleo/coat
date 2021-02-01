@@ -1,8 +1,8 @@
 use std::panic::Location;
 
-use druid::{Color, RenderContext};
+use druid::{BoxConstraints, Color, Event, LifeCycle, Point, RenderContext, kurbo::Circle};
 
-use crate::{cx::Cx, render::{Properties, RenderObject}};
+use crate::{context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx}, cx::Cx, render::{Properties, RenderObject}, tree::Children};
 
 
 pub struct Quad {
@@ -35,12 +35,14 @@ impl Properties for Quad {
 
 pub struct QuadObject {
     props: Quad,
+    cursor: Point,
 }
 
 impl Default for QuadObject {
     fn default() -> Self {
         QuadObject {
-            props: Quad::new()
+            props: Quad::new(),
+            cursor: Point::ZERO,
         }
     }
 }
@@ -49,27 +51,31 @@ impl RenderObject for QuadObject {
     type Props = Quad;
     type Action = ();
 
-    fn update(&mut self, ctx: &mut crate::context::UpdateCtx, props: Self::Props) {
-        println!("Quad updated.");
+    fn update(&mut self, ctx: &mut UpdateCtx, props: Self::Props) {
+        self.props = props;
     }
 
-    fn event(&mut self, ctx: &mut crate::context::EventCtx, event: &druid::Event, children: &mut crate::tree::Children) {
-        println!("Quad received event.");
+    fn event(&mut self, ctx: &mut EventCtx, event: &Event, children: &mut Children) {
+        if let Event::MouseMove(event) = event {
+            self.cursor = event.pos;
+            ctx.request_paint();
+        }
     }
 
-    fn lifecycle(&mut self, ctx: &mut crate::context::LifeCycleCtx, event: &druid::LifeCycle) {
+    fn lifecycle(&mut self, ctx: &mut LifeCycleCtx, event: &LifeCycle) {
         println!("Quad received lifecycle.");
     }
 
-    fn layout(&mut self, ctx: &mut crate::context::LayoutCtx, bc: &druid::BoxConstraints, children: &mut crate::tree::Children)
+    fn layout(&mut self, ctx: &mut LayoutCtx, bc: &BoxConstraints, children: &mut Children)
         -> druid::Size {
         bc.max()
     }
 
-    fn paint(&mut self, ctx: &mut crate::context::PaintCtx, children: &mut crate::tree::Children) {
+    fn paint(&mut self, ctx: &mut PaintCtx, children: &mut Children) {
         let size = ctx.size();
-        println!("Quad painted with {:?}.", size);
         let rect = size.to_rect();
         ctx.fill(rect, &self.props.color);
+        let circle = Circle::new(self.cursor, 10.0);
+        ctx.fill(circle, &Color::SILVER);
     }
 }

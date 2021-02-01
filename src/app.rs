@@ -52,6 +52,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
         data: &mut AppWidgetData,
         env: &druid::Env,
     ) {
+        ctx.set_active(true);
         let ext_handle = ctx.get_external_handle();
 
         let mut context_state = ContextState {
@@ -71,6 +72,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
         };
 
         root.object.event(&mut event_ctx, event, &mut root.children);
+        ctx.request_paint_rect(root.state.invalid.bounding_box());
     }
 
     fn lifecycle(
