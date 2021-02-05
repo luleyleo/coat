@@ -1,7 +1,7 @@
 use coat::{
     app::App,
     cx::Cx,
-    widgets::{padding::Padding, quad::Quad},
+    widgets::{label::Label, padding::Padding, quad::Quad},
 };
 use druid::Color;
 
@@ -11,6 +11,6 @@ fn main() {
 
 fn app(cx: &mut Cx) {
     Padding::new(10.0).build(cx, |cx| {
-        Quad::new().color(Color::TEAL).build(cx);
+        Label::new("Hello world!").build(cx);
     });
 }
