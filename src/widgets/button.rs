@@ -15,28 +15,21 @@ use style::{Style, StyleSheet};
 // the minimum padding added to a button.
 // NOTE: these values are chosen to match the existing look of TextBox; these
 // should be reevaluated at some point.
-const LABEL_INSETS: Insets = Insets::uniform_xy(8., 2.);
+const LABEL_INSETS: Insets = Insets::uniform_xy(8., 8.);
 
 #[derive(Default, PartialEq)]
 pub struct Button {
-    label: Option<String>,
     disabled: bool,
     style: Option<Box<dyn StyleSheet>>,
 }
 
 impl Properties for Button {
     type Object = ButtonObject;
-    type Action = bool;
 }
 
 impl Button {
     pub fn new() -> Self {
         Self::default()
-    }
-
-    pub fn label(mut self, label: impl Into<String>) -> Self {
-        self.label = Some(label.into());
-        self
     }
 
     pub fn disabled(mut self, disabled: bool) -> Self {
@@ -45,9 +38,15 @@ impl Button {
     }
 
     #[track_caller]
-    pub fn build(self, cx: &mut Cx) -> bool {
+    pub fn labeled(self, cx: &mut Cx, label: impl Into<String>) -> bool {
         let caller = Location::caller().into();
-        cx.render_object::<ButtonObject>(caller, self).is_some()
+        cx.render_object(caller, self, |_| {}).is_some()
+    }
+
+    #[track_caller]
+    pub fn custom(self, cx: &mut Cx, content: impl FnOnce(&mut Cx)) -> bool {
+        let caller = Location::caller().into();
+        cx.render_object(caller, self, content).is_some()
     }
 }
 
@@ -134,8 +133,9 @@ impl RenderObject for ButtonObject {
         // HACK: to make sure we look okay at default sizes when beside a textbox,
         // we make sure we will have at least the same height as the default textbox.
         let min_height = style.min_height;
-        let baseline = children[0].baseline_offset();
-        ctx.set_baseline_offset(baseline + LABEL_INSETS.y1);
+        //let baseline = children[0].baseline_offset();
+        //ctx.set_baseline_offset(baseline + LABEL_INSETS.y1);
+        ctx.set_paint_insets(10.0);
 
         bc.constrain(Size::new(
             self.label_size.width + padding.width,
@@ -165,13 +165,7 @@ impl RenderObject for ButtonObject {
         ctx.stroke(rounded_rect, &border_color, stroke_width);
 
         ctx.fill(rounded_rect, &bg);
-
-        let label_offset = (size.to_vec2() - self.label_size.to_vec2()) / 2.0;
-
-        ctx.with_save(|ctx| {
-            ctx.transform(Affine::translate(label_offset));
-            children[0].paint(ctx);
-        });
+        children[0].paint(ctx);
     }
 }
 

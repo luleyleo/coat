@@ -1,13 +1,17 @@
 use std::{
     any::Any,
+    collections::VecDeque,
     ops::{Index, IndexMut},
 };
 
-use druid::{Cursor, Insets, Point, Rect, Region, Size, Vec2};
+use druid::{
+    kurbo::Shape, Affine, Cursor, Insets, InternalEvent, Point, Rect, Region, RenderContext, Size,
+    Vec2,
+};
 
 use crate::{
     bloom::Bloom,
-    context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx},
+    context::{ContextState, EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx},
     event::{Event, LifeCycle},
     id::ChildId,
     key::Caller,
@@ -187,27 +191,425 @@ impl IndexMut<usize> for Children {
     }
 }
 
-/// Public API for child nodes.
+/// [`RenderObject`] API for `Child` nodes.
 impl Child {
     pub fn event(&mut self, ctx: &mut EventCtx, event: &Event) {
-        self.object.event(ctx, event, &mut self.children)
+        if ctx.is_handled {
+            // This function is called by containers to propagate an event from
+            // containers to children. Non-recurse events will be invoked directly
+            // from other points in the library.
+            return;
+        }
+        let had_active = self.state.has_active;
+        let rect = self.layout_rect();
+
+        // If we need to replace either the event or its data.
+        let mut modified_event = None;
+
+        let recurse = match event {
+            Event::Internal(internal) => match internal {
+                InternalEvent::MouseLeave => {
+                    let hot_changed = Child::set_hot_state(
+                        self.object.as_mut(),
+                        &mut self.state,
+                        ctx.state,
+                        rect,
+                        None,
+                    );
+                    had_active || hot_changed
+                }
+                InternalEvent::TargetedCommand(cmd) => false,
+                InternalEvent::RouteTimer(token, widget_id) => false,
+            },
+            Event::WindowConnected => true,
+            Event::WindowSize(_) => {
+                self.state.needs_layout = true;
+                ctx.is_root
+            }
+            Event::MouseDown(mouse_event) => {
+                Child::set_hot_state(
+                    self.object.as_mut(),
+                    &mut self.state,
+                    ctx.state,
+                    rect,
+                    Some(mouse_event.pos),
+                );
+                if had_active || self.state.is_hot {
+                    let mut mouse_event = mouse_event.clone();
+                    mouse_event.pos -= rect.origin().to_vec2();
+                    modified_event = Some(Event::MouseDown(mouse_event));
+                    true
+                } else {
+                    false
+                }
+            }
+            Event::MouseUp(mouse_event) => {
+                Child::set_hot_state(
+                    self.object.as_mut(),
+                    &mut self.state,
+                    ctx.state,
+                    rect,
+                    Some(mouse_event.pos),
+                );
+                if had_active || self.state.is_hot {
+                    let mut mouse_event = mouse_event.clone();
+                    mouse_event.pos -= rect.origin().to_vec2();
+                    modified_event = Some(Event::MouseUp(mouse_event));
+                    true
+                } else {
+                    false
+                }
+            }
+            Event::MouseMove(mouse_event) => {
+                let hot_changed = Child::set_hot_state(
+                    self.object.as_mut(),
+                    &mut self.state,
+                    ctx.state,
+                    rect,
+                    Some(mouse_event.pos),
+                );
+                // MouseMove is recursed even if the widget is not active and not hot,
+                // but was hot previously. This is to allow the widget to respond to the movement,
+                // e.g. drag functionality where the widget wants to follow the mouse.
+                if had_active || self.state.is_hot || hot_changed {
+                    let mut mouse_event = mouse_event.clone();
+                    mouse_event.pos -= rect.origin().to_vec2();
+                    modified_event = Some(Event::MouseMove(mouse_event));
+                    true
+                } else {
+                    false
+                }
+            }
+            Event::Wheel(mouse_event) => {
+                Child::set_hot_state(
+                    self.object.as_mut(),
+                    &mut self.state,
+                    ctx.state,
+                    rect,
+                    Some(mouse_event.pos),
+                );
+                if had_active || self.state.is_hot {
+                    let mut mouse_event = mouse_event.clone();
+                    mouse_event.pos -= rect.origin().to_vec2();
+                    modified_event = Some(Event::Wheel(mouse_event));
+                    true
+                } else {
+                    false
+                }
+            }
+            Event::AnimFrame(_) => {
+                let r = self.state.request_anim;
+                self.state.request_anim = false;
+                r
+            }
+            Event::KeyDown(_) => self.state.has_focus,
+            Event::KeyUp(_) => self.state.has_focus,
+            Event::Paste(_) => self.state.has_focus,
+            Event::Zoom(_) => had_active || self.state.is_hot,
+            Event::Timer(_) => false, // This event was targeted only to our parent
+            Event::Command(_) => true,
+            Event::Notification(_) => false,
+        };
+
+        if recurse {
+            let mut inner_ctx = EventCtx {
+                state: ctx.state,
+                child_state: &mut self.state,
+                is_handled: false,
+                is_root: false,
+            };
+            let inner_event = modified_event.as_ref().unwrap_or(event);
+            inner_ctx.child_state.has_active = false;
+
+            self.object
+                .event(&mut inner_ctx, &inner_event, &mut self.children);
+
+            inner_ctx.child_state.has_active |= inner_ctx.child_state.is_active;
+            ctx.is_handled |= inner_ctx.is_handled;
+        }
+
+        ctx.child_state.merge_up(&mut self.state);
     }
 
     pub fn lifecycle(&mut self, ctx: &mut LifeCycleCtx, event: &LifeCycle) {
-        self.object.lifecycle(ctx, event)
+        let mut child_ctx = LifeCycleCtx {
+            state: ctx.state,
+            child_state: &mut self.state,
+        };
+
+        self.object.lifecycle(&mut child_ctx, event);
+
+        ctx.child_state.merge_up(&mut self.state);
     }
 
     pub fn layout(&mut self, ctx: &mut LayoutCtx, bc: &BoxConstraints) -> Size {
-        self.object.layout(ctx, bc, &mut self.children)
+        self.state.needs_layout = false;
+        self.state.is_expecting_set_origin_call = true;
+
+        let child_mouse_pos = match ctx.mouse_pos {
+            Some(pos) => Some(pos - self.layout_rect().origin().to_vec2() + self.viewport_offset()),
+            None => None,
+        };
+        let prev_size = self.state.size;
+
+        let mut child_ctx = LayoutCtx {
+            state: ctx.state,
+            child_state: &mut self.state,
+            mouse_pos: child_mouse_pos,
+        };
+
+        let new_size = self.object.layout(&mut child_ctx, bc, &mut self.children);
+        if new_size != prev_size {
+            let mut child_ctx = LifeCycleCtx {
+                child_state: child_ctx.child_state,
+                state: child_ctx.state,
+            };
+            let size_event = LifeCycle::Size(new_size);
+            self.object.lifecycle(&mut child_ctx, &size_event);
+        }
+
+        ctx.child_state.merge_up(&mut child_ctx.child_state);
+        self.state.size = new_size;
+        self.log_layout_issues(new_size);
+
+        new_size
+    }
+
+    fn log_layout_issues(&self, size: Size) {
+        if size.width.is_infinite() {
+            let name = self.object.name();
+            log::warn!("Widget `{}` has an infinite width.", name);
+        }
+        if size.height.is_infinite() {
+            let name = self.object.name();
+            log::warn!("Widget `{}` has an infinite height.", name);
+        }
     }
 
     pub fn paint(&mut self, ctx: &mut PaintCtx) {
-        self.object.paint(ctx, &mut self.children)
+        ctx.with_save(|ctx| {
+            let layout_origin = self.layout_rect().origin().to_vec2();
+            ctx.transform(Affine::translate(layout_origin));
+            let mut visible = ctx.region().clone();
+            visible.intersect_with(self.state.paint_rect());
+            visible -= layout_origin;
+            ctx.with_child_ctx(visible, |ctx| self.paint_raw(ctx));
+        });
+    }
+
+    /// Paint a child widget.
+    ///
+    /// Generally called by container widgets as part of their [`Widget::paint`]
+    /// method.
+    ///
+    /// Note that this method does not apply the offset of the layout rect.
+    /// If that is desired, use [`paint`] instead.
+    ///
+    /// [`layout`]: trait.Widget.html#tymethod.layout
+    /// [`Widget::paint`]: trait.Widget.html#tymethod.paint
+    /// [`paint`]: #method.paint
+    pub fn paint_raw(&mut self, ctx: &mut PaintCtx) {
+        // we need to do this before we borrow from self
+        // if env.get(Env::DEBUG_WIDGET_ID) {
+        //     self.make_widget_id_layout_if_needed(self.state.id, ctx, env);
+        // }
+
+        let mut inner_ctx = PaintCtx {
+            render_ctx: ctx.render_ctx,
+            state: ctx.state,
+            z_ops: Vec::new(),
+            region: ctx.region.clone(),
+            child_state: &self.state,
+            depth: ctx.depth,
+        };
+        self.object.paint(&mut inner_ctx, &mut self.children);
+
+        // let debug_ids = inner_ctx.is_hot() && env.get(Env::DEBUG_WIDGET_ID);
+        // if debug_ids {
+        //     // this also draws layout bounds
+        //     self.debug_paint_widget_ids(&mut inner_ctx, env);
+        // }
+
+        // if !debug_ids && env.get(Env::DEBUG_PAINT) {
+        //     self.debug_paint_layout_bounds(&mut inner_ctx, env);
+        // }
+
+        ctx.z_ops.append(&mut inner_ctx.z_ops);
+    }
+}
+
+/// Public API for child nodes.
+impl Child {
+    /// Query the "active" state of the widget.
+    pub fn is_active(&self) -> bool {
+        self.state.is_active
+    }
+
+    /// Returns `true` if any descendant is active.
+    pub fn has_active(&self) -> bool {
+        self.state.has_active
+    }
+
+    /// Query the "hot" state of the widget.
+    ///
+    /// See [`EventCtx::is_hot`](struct.EventCtx.html#method.is_hot) for
+    /// additional information.
+    pub fn is_hot(&self) -> bool {
+        self.state.is_hot
+    }
+
+    /// Set the origin of this widget, in the parent's coordinate space.
+    ///
+    /// A container widget should call the [`Widget::layout`] method on its children in
+    /// its own [`Widget::layout`] implementation, and then call `set_origin` to
+    /// position those children.
+    ///
+    /// The child will receive the [`LifeCycle::Size`] event informing them of the final [`Size`].
+    ///
+    /// [`Widget::layout`]: trait.Widget.html#tymethod.layout
+    /// [`Rect`]: struct.Rect.html
+    /// [`Size`]: struct.Size.html
+    /// [`LifeCycle::Size`]: enum.LifeCycle.html#variant.Size
+    pub fn set_origin(&mut self, ctx: &mut LayoutCtx, origin: Point) {
+        self.state.origin = origin;
+        self.state.is_expecting_set_origin_call = false;
+        let layout_rect = self.layout_rect();
+
+        // if the widget has moved, it may have moved under the mouse, in which
+        // case we need to handle that.
+        if Child::set_hot_state(
+            self.object.as_mut(),
+            &mut self.state,
+            ctx.state,
+            layout_rect,
+            ctx.mouse_pos,
+        ) {
+            ctx.child_state.merge_up(&mut self.state);
+        }
+    }
+
+    /// Returns the layout [`Rect`].
+    ///
+    /// This will be a [`Rect`] with a [`Size`] determined by the child's [`layout`]
+    /// method, and the origin that was set by [`set_origin`].
+    ///
+    /// [`Rect`]: struct.Rect.html
+    /// [`Size`]: struct.Size.html
+    /// [`layout`]: trait.Widget.html#tymethod.layout
+    /// [`set_origin`]: WidgetPod::set_origin
+    pub fn layout_rect(&self) -> Rect {
+        self.state.layout_rect()
+    }
+
+    /// Set the viewport offset.
+    ///
+    /// This is relevant only for children of a scroll view (or similar). It must
+    /// be set by the parent widget whenever it modifies the position of its child
+    /// while painting it and propagating events. As a rule of thumb, you need this
+    /// if and only if you `Affine::translate` the paint context before painting
+    /// your child. For an example, see the implentation of [`Scroll`].
+    ///
+    /// [`Scroll`]: widget/struct.Scroll.html
+    pub fn set_viewport_offset(&mut self, offset: Vec2) {
+        if offset != self.state.viewport_offset {
+            // We need the parent_window_origin recalculated.
+            // It should be possible to just trigger the InternalLifeCycle::ParentWindowOrigin here,
+            // instead of full layout. Would need more management in WidgetState.
+            self.state.needs_layout = true;
+        }
+        self.state.viewport_offset = offset;
+    }
+
+    /// The viewport offset.
+    ///
+    /// This will be the same value as set by [`set_viewport_offset`].
+    ///
+    /// [`set_viewport_offset`]: #method.viewport_offset
+    pub fn viewport_offset(&self) -> Vec2 {
+        self.state.viewport_offset
+    }
+
+    /// Get the widget's paint [`Rect`].
+    ///
+    /// This is the [`Rect`] that widget has indicated it needs to paint in.
+    /// This is the same as the [`layout_rect`] with the [`paint_insets`] applied;
+    /// in the general case it is the same as the [`layout_rect`].
+    ///
+    /// [`layout_rect`]: #method.layout_rect
+    /// [`Rect`]: struct.Rect.html
+    /// [`paint_insets`]: #method.paint_insets
+    pub fn paint_rect(&self) -> Rect {
+        self.state.paint_rect()
+    }
+
+    /// Return the paint [`Insets`] for this widget.
+    ///
+    /// If these [`Insets`] are nonzero, they describe the area beyond a widget's
+    /// layout rect where it needs to paint.
+    ///
+    /// These are generally zero; exceptions are widgets that do things like
+    /// paint a drop shadow.
+    ///
+    /// A widget can set its insets by calling [`set_paint_insets`] during its
+    /// [`layout`] method.
+    ///
+    /// [`Insets`]: struct.Insets.html
+    /// [`set_paint_insets`]: struct.LayoutCtx.html#method.set_paint_insets
+    /// [`layout`]: trait.Widget.html#tymethod.layout
+    pub fn paint_insets(&self) -> Insets {
+        self.state.paint_insets
+    }
+
+    /// Given a parents layout size, determine the appropriate paint `Insets`
+    /// for the parent.
+    ///
+    /// This is a convenience method to be used from the [`layout`] method
+    /// of a `Widget` that manages a child; it allows the parent to correctly
+    /// propogate a child's desired paint rect, if it extends beyond the bounds
+    /// of the parent's layout rect.
+    ///
+    /// [`layout`]: trait.Widget.html#tymethod.layout
+    /// [`Insets`]: struct.Insets.html
+    pub fn compute_parent_paint_insets(&self, parent_size: Size) -> Insets {
+        let parent_bounds = Rect::ZERO.with_size(parent_size);
+        let union_pant_rect = self.paint_rect().union(parent_bounds);
+        union_pant_rect - parent_bounds
     }
 
     /// The distance from the bottom of this widget to the baseline.
     pub fn baseline_offset(&self) -> f64 {
         self.state.baseline_offset
+    }
+
+    /// Determines if the provided `mouse_pos` is inside `rect`
+    /// and if so updates the hot state and sends `LifeCycle::HotChanged`.
+    ///
+    /// Returns `true` if the hot state changed.
+    ///
+    /// The provided `child_state` should be merged up if this returns `true`.
+    fn set_hot_state(
+        child: &mut dyn AnyRenderObject,
+        child_state: &mut ChildState,
+        state: &mut ContextState,
+        rect: Rect,
+        mouse_pos: Option<Point>,
+    ) -> bool {
+        let had_hot = child_state.is_hot;
+        child_state.is_hot = match mouse_pos {
+            Some(pos) => rect.winding(pos) != 0,
+            None => false,
+        };
+        if had_hot != child_state.is_hot {
+            let hot_changed_event = LifeCycle::HotChanged(child_state.is_hot);
+            let mut child_ctx = LifeCycleCtx { state, child_state };
+            child.lifecycle(&mut child_ctx, &hot_changed_event);
+            // if hot changes and we're showing widget ids, always repaint
+            // if env.get(Env::DEBUG_WIDGET_ID) {
+            //     child_ctx.request_paint();
+            // }
+            return true;
+        }
+        false
     }
 }
 

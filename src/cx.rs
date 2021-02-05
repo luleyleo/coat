@@ -2,24 +2,24 @@ use crate::{
     context::{ContextState, UpdateCtx},
     id::ChildCounter,
     key::Caller,
-    render::{AnyRenderObject, RenderObject},
+    render::{AnyRenderObject, Properties, RenderObject},
     tree::{Child, ChildState, Children, State},
 };
 use core::panic;
 use std::any::{type_name, Any};
 
-pub struct Cx<'a> {
+pub struct Cx<'a, 'b> {
     tree: &'a mut Children,
-    state: &'a mut ContextState<'a>,
+    state: &'a mut ContextState<'b>,
     child_counter: &'a mut ChildCounter,
     state_index: usize,
     render_index: usize,
 }
 
-impl<'a> Cx<'a> {
+impl<'a, 'b> Cx<'a, 'b> {
     pub(crate) fn new(
         tree: &'a mut Children,
-        state: &'a mut ContextState<'a>,
+        state: &'a mut ContextState<'b>,
         child_counter: &'a mut ChildCounter,
     ) -> Self {
         Cx {
@@ -31,11 +31,11 @@ impl<'a> Cx<'a> {
         }
     }
 
-    pub fn state_node<T, I, N>(&mut self, caller: Caller, init: I, fun: N)
+    pub fn state_node<T, I, N>(&mut self, caller: Caller, init: I, content: N)
     where
         T: Any,
         I: FnOnce() -> T,
-        N: FnOnce(&mut Cx<'a>, &mut T),
+        N: FnOnce(&mut Cx, &mut T),
     {
         let index = self.find_state_node(caller);
         if index.is_none() {
@@ -52,7 +52,7 @@ impl<'a> Cx<'a> {
         self.state_index = index + 1;
 
         if let Some(state) = node.state.downcast_mut::<T>() {
-            fun(self, state);
+            content(self, state);
         } else {
             // TODO: Handle wrong type of state
             panic!(
@@ -62,9 +62,16 @@ impl<'a> Cx<'a> {
         }
     }
 
-    pub fn render_object<R>(&mut self, caller: Caller, props: R::Props) -> Option<R::Action>
+    pub fn render_object<P, R, N>(
+        &mut self,
+        caller: Caller,
+        props: P,
+        content: N,
+    ) -> Option<R::Action>
     where
-        R: RenderObject + Default + Any,
+        P: Properties<Object = R>,
+        R: RenderObject<Props = P> + Default + Any,
+        N: FnOnce(&mut Cx),
     {
         let index = match self.find_render_object(caller) {
             Some(index) => index,
@@ -77,6 +84,8 @@ impl<'a> Cx<'a> {
             node.dead = true;
         }
         let node = &mut self.tree.renders[index];
+        self.render_index = index + 1;
+
         if let Some(object) = node.object.as_any().downcast_mut::<R>() {
             let mut ctx = UpdateCtx {
                 state: self.state,
@@ -87,7 +96,10 @@ impl<'a> Cx<'a> {
             // TODO: Think of something smart
             panic!("Wrong node type. Expected {}", std::any::type_name::<R>())
         }
-        self.render_index = index + 1;
+
+        let mut object_cx = Cx::new(&mut node.children, self.state, self.child_counter);
+        content(&mut object_cx);
+
         node.state
             .actions
             .pop()
@@ -95,7 +107,7 @@ impl<'a> Cx<'a> {
     }
 }
 
-impl<'a> Cx<'a> {
+impl Cx<'_, '_> {
     fn find_state_node(&mut self, caller: Caller) -> Option<usize> {
         let mut ix = self.state_index;
         for node in &mut self.tree.states[ix..] {

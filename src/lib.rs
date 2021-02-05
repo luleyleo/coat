@@ -2,6 +2,7 @@
 #![allow(unreachable_code)]
 #![allow(unused_imports)]
 #![allow(dead_code)]
+#![allow(clippy::clippy::new_without_default)]
 
 use std::any::Any;
 

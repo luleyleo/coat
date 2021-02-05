@@ -1,4 +1,4 @@
-use druid::{Application, ExtEventSink, WindowDesc};
+use druid::{Application, ExtEventSink, Point, WindowDesc};
 
 use crate::{
     context::{ContextState, EventCtx, LayoutCtx, PaintCtx},
@@ -30,6 +30,7 @@ struct AppWidget {
     child_counter: ChildCounter,
     focus_widget: Option<ChildId>,
     ext_event_sink: Option<ExtEventSink>,
+    mouse_pos: Option<Point>,
 }
 
 impl AppWidget {
@@ -40,6 +41,7 @@ impl AppWidget {
             child_counter: ChildCounter::new(),
             focus_widget: None,
             ext_event_sink: None,
+            mouse_pos: None,
         }
     }
 
@@ -60,6 +62,15 @@ impl druid::Widget<AppWidgetData> for AppWidget {
     ) {
         ctx.set_active(true);
         let ext_handle = ctx.get_external_handle();
+
+        match event {
+            druid::Event::MouseMove(event)
+            | druid::Event::MouseUp(event)
+            | druid::Event::MouseDown(event) => {
+                self.mouse_pos = Some(event.pos);
+            }
+            _ => {}
+        }
 
         let mut context_state = ContextState {
             ext_handle: &ext_handle,
@@ -101,6 +112,9 @@ impl druid::Widget<AppWidgetData> for AppWidget {
             let mut cx = Cx::new(&mut self.root, &mut context_state, &mut self.child_counter);
             (self.app)(&mut cx);
         }
+        if matches!(event, druid::LifeCycle::HotChanged(false)) {
+            self.mouse_pos = None;
+        }
     }
 
     fn update(
@@ -121,6 +135,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
         env: &druid::Env,
     ) -> druid::Size {
         let ext_handle = ctx.get_external_handle();
+        let mouse_pos = self.mouse_pos;
 
         let mut context_state = ContextState {
             ext_handle: &ext_handle,
@@ -134,6 +149,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
         let mut layout_ctx = LayoutCtx {
             state: &mut context_state,
             child_state: &mut root.state,
+            mouse_pos,
         };
 
         root.state.size = root.object.layout(&mut layout_ctx, bc, &mut root.children);

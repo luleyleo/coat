@@ -28,13 +28,12 @@ impl Quad {
     #[track_caller]
     pub fn build(self, cx: &mut Cx) {
         let caller = Location::caller().into();
-        cx.render_object::<QuadObject>(caller, self);
+        cx.render_object(caller, self, |_| {});
     }
 }
 
 impl Properties for Quad {
     type Object = QuadObject;
-    type Action = ();
 }
 
 pub struct QuadObject {
@@ -66,9 +65,7 @@ impl RenderObject for QuadObject {
         }
     }
 
-    fn lifecycle(&mut self, ctx: &mut LifeCycleCtx, event: &LifeCycle) {
-        println!("Quad received lifecycle.");
-    }
+    fn lifecycle(&mut self, ctx: &mut LifeCycleCtx, event: &LifeCycle) {}
 
     fn layout(
         &mut self,
@@ -82,6 +79,7 @@ impl RenderObject for QuadObject {
     fn paint(&mut self, ctx: &mut PaintCtx, children: &mut Children) {
         let size = ctx.size();
         let rect = size.to_rect();
+        ctx.clip(rect);
         ctx.fill(rect, &self.props.color);
         let circle = Circle::new(self.cursor, 10.0);
         ctx.fill(circle, &Color::SILVER);

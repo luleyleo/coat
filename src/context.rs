@@ -57,6 +57,7 @@ pub struct LifeCycleCtx<'a, 'b> {
 pub struct LayoutCtx<'a, 'b> {
     pub(crate) state: &'a mut ContextState<'b>,
     pub(crate) child_state: &'a mut ChildState,
+    pub(crate) mouse_pos: Option<Point>,
 }
 
 pub struct PaintCtx<'a, 'b, 'c> {

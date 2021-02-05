@@ -5,11 +5,14 @@ use crate::{
     tree::Children,
     BoxConstraints,
 };
-use std::any::Any;
+use std::any::{type_name, Any};
 
 pub trait Properties {
     type Object: RenderObject;
-    type Action;
+
+    fn name() -> &'static str {
+        std::any::type_name::<Self>()
+    }
 }
 
 pub trait RenderObject {
@@ -26,6 +29,7 @@ pub trait RenderObject {
 
 pub trait AnyRenderObject: Any {
     fn as_any(&mut self) -> &mut dyn Any;
+    fn name(&self) -> &'static str;
 
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, children: &mut Children);
     fn lifecycle(&mut self, ctx: &mut LifeCycleCtx, event: &LifeCycle);
@@ -40,6 +44,10 @@ where
 {
     fn as_any(&mut self) -> &mut dyn Any {
         self
+    }
+
+    fn name(&self) -> &'static str {
+        <R::Props as Properties>::name()
     }
 
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, children: &mut Children) {
