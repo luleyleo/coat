@@ -72,12 +72,14 @@ impl druid::Widget<AppWidgetData> for AppWidget {
             _ => {}
         }
 
+        let focus_widget = self.focus_widget;
+
         let mut context_state = ContextState {
             ext_handle: &ext_handle,
             window_id: ctx.window_id(),
             window: &ctx.window().clone(),
             text: ctx.text(),
-            focus_widget: self.focus_widget,
+            focus_widget,
         };
 
         let root = self.root();
@@ -90,6 +92,19 @@ impl druid::Widget<AppWidgetData> for AppWidget {
 
         root.object.event(&mut event_ctx, event, &mut root.children);
         ctx.request_paint_rect(root.state.invalid.bounding_box());
+
+        while self.root().state.has_actions {
+            let ext_handle = ctx.get_external_handle();
+            let mut context_state = ContextState {
+                ext_handle: &ext_handle,
+                window_id: ctx.window_id(),
+                window: &ctx.window().clone(),
+                text: ctx.text(),
+                focus_widget,
+            };
+            let mut cx = Cx::new(&mut self.root, &mut context_state, &mut self.child_counter);
+            (self.app)(&mut cx);
+        }
     }
 
     fn lifecycle(

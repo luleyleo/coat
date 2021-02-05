@@ -371,7 +371,13 @@ impl_context_method!(
     {
         /// Submit an Action
         pub fn submit_action<A: Any>(&mut self, action: A) {
+            // TODO: Handle multiple queued actions.
+            assert!(
+                self.child_state.actions.is_empty(),
+                "For now, only a single action can be emitted."
+            );
             self.child_state.actions.push(Box::new(action));
+            self.child_state.has_actions = true;
         }
     }
 );

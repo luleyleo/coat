@@ -99,7 +99,7 @@ impl RenderObject for ButtonObject {
                 if ctx.is_active() && mouse_event.button == MouseButton::Left {
                     ctx.set_active(false);
                     if ctx.is_hot() {
-                        //ctx.submit_action(ButtonAction::Clicked);
+                        ctx.submit_action(ButtonAction::Clicked);
                         ctx.set_handled();
                     }
                     ctx.request_paint();
@@ -267,11 +267,25 @@ pub mod style {
             Style {
                 min_height: 24.0,
                 shadow_offset: Vec2::new(0.0, 0.0),
-                background: Background::Color(Color::rgb(0.87, 0.87, 0.87)),
+                background: Background::Color(Color::rgb(0.5, 0.5, 0.87)),
                 border_radius: 2.0,
                 border_width: 1.0,
                 border_color: Color::rgb(0.7, 0.7, 0.7),
                 text_color: Color::BLACK,
+            }
+        }
+
+        fn hovered(&self) -> Style {
+            Style {
+                background: Background::Color(Color::rgb(0.6, 0.6, 0.87)),
+                ..self.enabled()
+            }
+        }
+
+        fn pressed(&self) -> Style {
+            Style {
+                background: Background::Color(Color::rgb(0.6, 0.6, 0.95)),
+                ..self.enabled()
             }
         }
 

@@ -47,6 +47,7 @@ pub struct Child {
 
 pub struct ChildState {
     pub(crate) actions: Vec<Box<dyn Any>>,
+    pub(crate) has_actions: bool,
 
     pub(crate) id: ChildId,
 
@@ -651,6 +652,7 @@ impl ChildState {
         ChildState {
             id,
             actions: Vec::new(),
+            has_actions: false,
             origin: Point::ORIGIN,
             parent_window_origin: Point::ORIGIN,
             size: size.unwrap_or_default(),
@@ -712,6 +714,8 @@ impl ChildState {
         self.request_update |= child_state.request_update;
         self.request_focus = child_state.request_focus.take().or(self.request_focus);
         //self.timers.extend_drain(&mut child_state.timers);
+
+        self.has_actions = !self.actions.is_empty() || child_state.has_actions;
 
         // We reset `child_state.cursor` no matter what, so that on the every pass through the tree,
         // things will be recalculated just from `cursor_change`.

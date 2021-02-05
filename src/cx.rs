@@ -100,10 +100,13 @@ impl<'a, 'b> Cx<'a, 'b> {
         let mut object_cx = Cx::new(&mut node.children, self.state, self.child_counter);
         content(&mut object_cx);
 
-        node.state
-            .actions
-            .pop()
-            .and_then(|action| action.downcast::<R::Action>().ok().map(|action| *action))
+        // TODO: Handle multiple queued actions.
+        node.state.has_actions = false;
+        if let Some(action) = node.state.actions.pop() {
+            action.downcast::<R::Action>().ok().map(|action| *action)
+        } else {
+            None
+        }
     }
 }
 
