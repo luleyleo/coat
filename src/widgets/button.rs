@@ -1,14 +1,6 @@
 use std::panic::Location;
 
-use crate::{
-    context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx},
-    cx::Cx,
-    event::{Event, LifeCycle},
-    kurbo::Size,
-    render::{Properties, RenderObject},
-    tree::Children,
-    BoxConstraints, VisualEq,
-};
+use crate::{BoxConstraints, VisualEq, context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx}, cx::Cx, event::{Event, LifeCycle}, kurbo::Size, render::{Properties, RenderObject}, tree::Children, widgets::label::Label};
 use druid::{Affine, Insets, LinearGradient, MouseButton, RenderContext, UnitPoint};
 use style::{Style, StyleSheet};
 
@@ -40,7 +32,9 @@ impl Button {
     #[track_caller]
     pub fn labeled(self, cx: &mut Cx, label: impl Into<String>) -> bool {
         let caller = Location::caller().into();
-        cx.render_object(caller, self, |_| {}).is_some()
+        cx.render_object(caller, self, |cx| {
+            Label::new(label).build(cx);
+        }).is_some()
     }
 
     #[track_caller]

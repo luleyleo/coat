@@ -1,7 +1,7 @@
 use coat::{
     app::App,
     cx::Cx,
-    widgets::{button::Button, label::Label, padding::Padding},
+    widgets::{button::Button, padding::Padding},
 };
 
 fn main() {
@@ -10,10 +10,7 @@ fn main() {
 
 fn app(cx: &mut Cx) {
     Padding::new(100.0).build(cx, |cx| {
-        let clicked = Button::new().custom(cx, |cx| {
-            Label::new("Hello world!").build(cx);
-        });
-        if clicked {
+        if Button::new().labeled(cx, "Hello world!") {
             println!("The Button has been clicked!");
         }
     });
