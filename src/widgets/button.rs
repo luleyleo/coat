@@ -66,11 +66,15 @@ pub struct ButtonObject {
 }
 
 impl ButtonObject {
-    fn style(&self, hovered: bool, pressed: bool) -> Style {
-        let sheet = match self.props.style {
+    fn style_sheet(&self) -> &dyn style::StyleSheet {
+        match self.props.style {
             Some(ref sheet) => sheet.as_ref(),
             None => &style::Default,
-        };
+        }
+    }
+
+    fn style(&self, hovered: bool, pressed: bool) -> Style {
+        let sheet = self.style_sheet();
         let disabled = self.props.disabled;
         match (disabled, hovered, pressed) {
             (true, _, _) => sheet.disabled(),
@@ -140,10 +144,8 @@ impl RenderObject for ButtonObject {
         let baseline = children[0].baseline_offset();
         ctx.set_baseline_offset(baseline + style.border_radius);
 
-        let size = bc.constrain(Size::new(
-            self.label_size.width + padding.width,
-            (self.label_size.height + padding.height).max(style.min_height),
-        ));
+        let required_size = self.label_size + padding;
+        let size = bc.constrain(self.style_sheet().pick_size(bc, required_size));
 
         let h_offset = (size.width - self.label_size.width) / 2.0;
         let v_offset = (size.height - self.label_size.height) / 2.0;
@@ -179,9 +181,12 @@ impl RenderObject for ButtonObject {
 }
 
 pub mod style {
+    use crate::{
+        kurbo::{Size, Vec2},
+        piet::Color,
+        BoxConstraints,
+    };
     use std::any::Any;
-
-    use druid::{Color, Vec2};
 
     const TRANSPARENT: Color = Color::rgba8(0, 0, 0, 0);
 
@@ -202,7 +207,6 @@ pub mod style {
     /// The appearance of a button.
     #[derive(Debug, Clone)]
     pub struct Style {
-        pub min_height: f64,
         pub border_width: f64,
         pub border_radius: f64,
         pub border_color: Color,
@@ -215,7 +219,6 @@ pub mod style {
     impl std::default::Default for Style {
         fn default() -> Self {
             Self {
-                min_height: 0.0,
                 shadow_offset: Vec2::default(),
                 background: Background::Color(TRANSPARENT),
                 border_radius: 0.0,
@@ -266,6 +269,10 @@ pub mod style {
                 ..active
             }
         }
+
+        fn pick_size(&self, bc: &BoxConstraints, required_size: Size) -> Size {
+            Size::new(required_size.width, f64::max(required_size.height, 24.0))
+        }
     }
 
     #[derive(Debug, PartialEq)]
@@ -274,13 +281,12 @@ pub mod style {
     impl StyleSheet for Default {
         fn enabled(&self) -> Style {
             Style {
-                min_height: 24.0,
                 shadow_offset: Vec2::new(0.0, 0.0),
                 background: Background::Color(Color::rgb(0.5, 0.5, 0.87)),
                 border_radius: 2.0,
                 border_width: 1.0,
                 border_color: Color::rgb(0.7, 0.7, 0.7),
-                text_color: Color::BLACK,
+                text_color: Color::WHITE,
             }
         }
 
