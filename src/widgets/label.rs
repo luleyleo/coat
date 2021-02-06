@@ -241,6 +241,7 @@ impl RenderObject for Label {
         };
 
         self.layout.set_wrap_width(width);
+        // TODO: This `Env::default()` call keeps logging available locales.
         self.layout
             .rebuild_if_needed(ctx.text(), &druid::Env::default());
 

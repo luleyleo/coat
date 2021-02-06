@@ -92,18 +92,27 @@ impl druid::Widget<AppWidgetData> for AppWidget {
 
         root.object.event(&mut event_ctx, event, &mut root.children);
         ctx.request_paint_rect(root.state.invalid.bounding_box());
+        ctx.request_layout();
 
-        while self.root().state.has_actions {
-            let ext_handle = ctx.get_external_handle();
-            let mut context_state = ContextState {
-                ext_handle: &ext_handle,
-                window_id: ctx.window_id(),
-                window: &ctx.window().clone(),
-                text: ctx.text(),
-                focus_widget,
-            };
-            let mut cx = Cx::new(&mut self.root, &mut context_state, &mut self.child_counter);
-            (self.app)(&mut cx);
+        if self.root().state.has_actions {
+            loop {
+                let had_actions = self.root().state.has_actions;
+
+                let ext_handle = ctx.get_external_handle();
+                let mut context_state = ContextState {
+                    ext_handle: &ext_handle,
+                    window_id: ctx.window_id(),
+                    window: &ctx.window().clone(),
+                    text: ctx.text(),
+                    focus_widget,
+                };
+                let mut cx = Cx::new(&mut self.root, &mut context_state, &mut self.child_counter);
+                (self.app)(&mut cx);
+
+                if !had_actions {
+                    break;
+                }
+            }
         }
     }
 
