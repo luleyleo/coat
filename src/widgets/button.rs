@@ -11,6 +11,7 @@ use crate::{
     widgets::label::Label,
     BoxConstraints,
 };
+use druid::Point;
 use style::{Style, StyleSheet};
 
 // the minimum padding added to a button.
@@ -131,20 +132,24 @@ impl RenderObject for ButtonObject {
     ) -> Size {
         bc.debug_check("Button");
         let style = self.style(ctx.is_hot(), ctx.is_active());
-        let padding = Size::new(LABEL_INSETS.x_value(), LABEL_INSETS.y_value());
-        let label_bc = bc.shrink(padding).loosen();
-        self.label_size = children[0].layout(ctx, &label_bc);
-        // HACK: to make sure we look okay at default sizes when beside a textbox,
-        // we make sure we will have at least the same height as the default textbox.
-        let min_height = style.min_height;
-        //let baseline = children[0].baseline_offset();
-        //ctx.set_baseline_offset(baseline + LABEL_INSETS.y1);
-        ctx.set_paint_insets(10.0);
 
-        bc.constrain(Size::new(
+        let padding = Size::new(2.0 * style.border_radius, 2.0 * style.border_radius);
+        let label_bc = bc.loosen().shrink(padding);
+        self.label_size = children[0].layout(ctx, &label_bc);
+
+        let baseline = children[0].baseline_offset();
+        ctx.set_baseline_offset(baseline + style.border_radius);
+
+        let size = bc.constrain(Size::new(
             self.label_size.width + padding.width,
-            (self.label_size.height + padding.height).max(min_height),
-        ))
+            (self.label_size.height + padding.height).max(style.min_height),
+        ));
+
+        let h_offset = (size.width - self.label_size.width) / 2.0;
+        let v_offset = (size.height - self.label_size.height) / 2.0;
+        children[0].set_origin(ctx, Point::new(h_offset, v_offset));
+
+        size
     }
 
     fn paint(&mut self, ctx: &mut PaintCtx, children: &mut Children) {
