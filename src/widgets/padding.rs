@@ -34,23 +34,21 @@ impl Padding {
     /// Uniform padding:
     ///
     /// ```
-    /// use druid::widget::{Label, Padding};
-    /// use druid::kurbo::Insets;
+    /// use coat::widgets::{Label, Padding};
+    /// use coat::kurbo::Insets;
     ///
-    /// let _: Padding<()> = Padding::new(10.0);
-    /// let _: Padding<()> = Padding::new(Insets::uniform(10.0));
+    /// let _: Padding = Padding::new(10.0);
+    /// let _: Padding = Padding::new(Insets::uniform(10.0));
     /// ```
     ///
     /// Uniform padding across each axis:
     ///
     /// ```
-    /// use druid::widget::{Label, Padding};
-    /// use druid::kurbo::Insets;
+    /// use coat::widgets::{Label, Padding};
+    /// use coat::kurbo::Insets;
     ///
-    /// let child: Label<()> = Label::new("I need my space!");
-    /// let _: Padding<()> = Padding::new((10.0, 20.0));
-    /// // equivalent:
-    /// let _: Padding<()> = Padding::new(Insets::uniform_xy(10.0, 20.0));
+    /// let _: Padding = Padding::new((10.0, 20.0));
+    /// let _: Padding = Padding::new(Insets::uniform_xy(10.0, 20.0));
     /// ```
     ///
     /// [`kurbo::Insets`]: https://docs.rs/kurbo/0.5.3/kurbo/struct.Insets.html
