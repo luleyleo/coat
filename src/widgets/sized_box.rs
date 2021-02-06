@@ -31,12 +31,16 @@ impl SizedBox {
         }
     }
 
-    /// Construct container without child, and both width and height not set.
-    pub fn empty() -> Self {
-        Self {
-            width: None,
-            height: None,
-        }
+    #[track_caller]
+    pub fn build(self, cx: &mut Cx, content: impl FnOnce(&mut Cx)) {
+        let caller = Location::caller().into();
+        cx.render_object(caller, self, content);
+    }
+
+    #[track_caller]
+    pub fn empty(self, cx: &mut Cx) {
+        let caller = Location::caller().into();
+        cx.render_object(caller, self, |_| {});
     }
 
     /// Set container's width.

@@ -65,9 +65,9 @@ impl Padding {
     }
 
     #[track_caller]
-    pub fn build(self, cx: &mut Cx, content: impl FnOnce(&mut Cx)) -> bool {
+    pub fn build(self, cx: &mut Cx, content: impl FnOnce(&mut Cx)) {
         let caller = Location::caller().into();
-        cx.render_object(caller, self, content).is_some()
+        cx.render_object(caller, self, content);
     }
 }
 

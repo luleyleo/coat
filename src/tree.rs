@@ -172,6 +172,10 @@ impl Children {
     pub fn get_mut(&mut self, index: usize) -> Option<&mut Child> {
         self.renders.get_mut(index)
     }
+
+    pub fn iter(&mut self) -> ChildIter {
+        self.into_iter()
+    }
 }
 
 impl Index<usize> for Children {
@@ -439,6 +443,10 @@ impl Child {
 
 /// Public API for child nodes.
 impl Child {
+    pub fn as_any(&mut self) -> &mut dyn Any {
+        self.object.as_any()
+    }
+
     /// Query the "active" state of the widget.
     pub fn is_active(&self) -> bool {
         self.state.is_active
