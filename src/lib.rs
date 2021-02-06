@@ -19,12 +19,10 @@ pub mod states;
 pub mod tree;
 pub mod widgets;
 
-//pub mod event;
 pub mod event {
     pub use druid::{Event, LifeCycle};
 }
 
-//mod box_constraints;
 pub use druid::BoxConstraints;
 
 pub trait VisualEq {

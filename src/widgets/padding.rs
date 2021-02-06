@@ -1,22 +1,4 @@
-// Copyright 2018 The Druid Authors.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 //! A widget that just adds padding during layout.
-
-use std::panic::Location;
-
-use druid::{BoxConstraints, Event, Insets, LifeCycle, Point, Size};
 
 use crate::{
     context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx},
@@ -24,6 +6,8 @@ use crate::{
     render::{Properties, RenderObject},
     tree::Children,
 };
+use druid::{BoxConstraints, Event, Insets, LifeCycle, Point, Size};
+use std::panic::Location;
 
 /// A widget that just adds padding around its child.
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
@@ -51,8 +35,8 @@ impl Padding {
     /// use druid::widget::{Label, Padding};
     /// use druid::kurbo::Insets;
     ///
-    /// let _: Padding<()> = Padding::new(10.0, Label::new("uniform!"));
-    /// let _: Padding<()> = Padding::new(Insets::uniform(10.0), Label::new("uniform!"));
+    /// let _: Padding<()> = Padding::new(10.0);
+    /// let _: Padding<()> = Padding::new(Insets::uniform(10.0));
     /// ```
     ///
     /// Uniform padding across each axis:
@@ -62,9 +46,9 @@ impl Padding {
     /// use druid::kurbo::Insets;
     ///
     /// let child: Label<()> = Label::new("I need my space!");
-    /// let _: Padding<()> = Padding::new((10.0, 20.0), Label::new("more y than x!"));
+    /// let _: Padding<()> = Padding::new((10.0, 20.0));
     /// // equivalent:
-    /// let _: Padding<()> = Padding::new(Insets::uniform_xy(10.0, 20.0), Label::new("ditto :)"));
+    /// let _: Padding<()> = Padding::new(Insets::uniform_xy(10.0, 20.0));
     /// ```
     ///
     /// [`kurbo::Insets`]: https://docs.rs/kurbo/0.5.3/kurbo/struct.Insets.html
