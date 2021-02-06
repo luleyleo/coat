@@ -3,14 +3,14 @@ use std::panic::Location;
 use crate::{
     context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx},
     cx::Cx,
-    event::{Event, LifeCycle},
-    kurbo::Size,
+    event::{Event, LifeCycle, MouseButton},
+    kurbo::{Insets, Size},
+    piet::RenderContext,
     render::{Properties, RenderObject},
     tree::Children,
     widgets::label::Label,
-    BoxConstraints, VisualEq,
+    BoxConstraints,
 };
-use druid::{Affine, Insets, LinearGradient, MouseButton, RenderContext, UnitPoint};
 use style::{Style, StyleSheet};
 
 // the minimum padding added to a button.

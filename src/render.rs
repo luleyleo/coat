@@ -5,14 +5,19 @@ use crate::{
     tree::Children,
     BoxConstraints,
 };
-use std::any::{type_name, Any};
+use std::any::Any;
 
 pub mod prelude {
-    pub use crate::context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx};
-    pub use crate::cx::Cx;
-    pub use crate::render::{Properties, RenderObject};
-    pub use crate::tree::{Child, Children};
-    pub use druid::{BoxConstraints, Event, LifeCycle, RenderContext, Size};
+    pub use crate::{
+        context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx},
+        cx::Cx,
+        event::{Event, LifeCycle},
+        kurbo::Size,
+        piet::RenderContext,
+        render::{Properties, RenderObject},
+        tree::{Child, Children},
+        BoxConstraints,
+    };
     pub use std::panic::Location;
 }
 

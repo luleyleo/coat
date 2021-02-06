@@ -1,22 +1,18 @@
-use std::{
-    any::Any,
-    collections::VecDeque,
-    ops::{Index, IndexMut},
-};
-
-use druid::{
-    kurbo::Shape, Affine, Cursor, Insets, InternalEvent, Point, Rect, Region, RenderContext, Size,
-    Vec2,
-};
-
 use crate::{
     bloom::Bloom,
     context::{ContextState, EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx},
     event::{Event, LifeCycle},
     id::ChildId,
     key::Caller,
+    kurbo::{Affine, Insets, Point, Rect, Shape, Size, Vec2},
+    piet::RenderContext,
     render::AnyRenderObject,
     BoxConstraints,
+};
+use druid::{Cursor, InternalEvent, Region};
+use std::{
+    any::Any,
+    ops::{Index, IndexMut},
 };
 
 #[derive(Default)]

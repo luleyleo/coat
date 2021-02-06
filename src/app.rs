@@ -1,12 +1,11 @@
-use druid::{Application, ExtEventSink, Point, WindowDesc};
-
 use crate::{
     context::{ContextState, EventCtx, LayoutCtx, PaintCtx},
     cx::Cx,
     id::{ChildCounter, ChildId},
-    render::AnyRenderObject,
+    kurbo::Point,
     tree::{Child, Children},
 };
+use druid::{ExtEventSink, WindowDesc};
 
 pub struct App {
     name: String,

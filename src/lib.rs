@@ -1,12 +1,9 @@
 #![allow(unused_variables)]
 #![allow(unreachable_code)]
-#![allow(unused_imports)]
 #![allow(dead_code)]
 #![allow(clippy::clippy::new_without_default)]
 
-use std::any::Any;
-
-pub use druid::{kurbo, piet};
+pub use druid::{kurbo, piet, text};
 
 pub mod app;
 pub mod bloom;
@@ -21,6 +18,7 @@ pub mod widgets;
 
 pub mod event {
     pub use druid::{Event, LifeCycle};
+    pub use druid::{MouseButton, MouseButtons, MouseEvent};
 }
 
 pub use druid::BoxConstraints;

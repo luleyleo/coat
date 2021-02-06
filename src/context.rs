@@ -5,13 +5,11 @@ use std::{
 
 use crate::{
     id::ChildId,
+    kurbo::{Affine, Insets, Point, Rect, Size},
+    piet::{Piet, PietText, RenderContext},
     tree::{ChildState, CursorChange, FocusChange},
 };
-use druid::{
-    piet::{Piet, PietText},
-    Affine, Cursor, ExtEventSink, Insets, Point, Rect, Region, RenderContext, Size, Vec2,
-    WindowHandle, WindowId,
-};
+use druid::{Cursor, ExtEventSink, Region, WindowHandle, WindowId};
 
 /// A macro for implementing methods on multiple contexts.
 ///

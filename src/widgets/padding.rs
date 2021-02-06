@@ -3,10 +3,12 @@
 use crate::{
     context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx},
     cx::Cx,
+    event::{Event, LifeCycle},
+    kurbo::{Insets, Point, Size},
     render::{Properties, RenderObject},
     tree::Children,
+    BoxConstraints,
 };
-use druid::{BoxConstraints, Event, Insets, LifeCycle, Point, Size};
 use std::panic::Location;
 
 /// A widget that just adds padding around its child.

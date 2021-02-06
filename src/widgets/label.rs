@@ -1,12 +1,11 @@
 //! A label widget.
 
-use crate::render::prelude::*;
-use druid::text::TextStorage;
-use druid::{
-    ArcStr, Color, Data, FontDescriptor, KeyOrValue, LocalizedString, Point, TextAlignment,
-    TextLayout,
+use crate::{
+    kurbo::Point,
+    piet::{Color, TextAlignment},
+    render::prelude::*,
+    text::{FontDescriptor, TextLayout},
 };
-use std::ops::{Deref, DerefMut};
 
 // added padding between the edges of the widget and the text.
 const LABEL_X_PADDING: f64 = 2.0;

@@ -6,7 +6,7 @@ use crate::{
     tree::{Child, ChildState, Children, State},
 };
 use core::panic;
-use std::any::{type_name, Any};
+use std::any::Any;
 
 pub struct Cx<'a, 'b> {
     tree: &'a mut Children,
