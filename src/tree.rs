@@ -357,6 +357,7 @@ impl Child {
             state: ctx.state,
             child_state: &mut self.state,
             mouse_pos: child_mouse_pos,
+            env: ctx.env,
         };
 
         let new_size = self.object.layout(&mut child_ctx, bc, &mut self.children);
@@ -422,6 +423,7 @@ impl Child {
             region: ctx.region.clone(),
             child_state: &self.state,
             depth: ctx.depth,
+            env: ctx.env,
         };
         self.object.paint(&mut inner_ctx, &mut self.children);
 

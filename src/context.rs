@@ -58,6 +58,7 @@ pub struct LayoutCtx<'a, 'b> {
     pub(crate) state: &'a mut ContextState<'b>,
     pub(crate) child_state: &'a mut ChildState,
     pub(crate) mouse_pos: Option<Point>,
+    pub(crate) env: &'a druid::Env,
 }
 
 pub struct PaintCtx<'a, 'b, 'c> {
@@ -71,6 +72,7 @@ pub struct PaintCtx<'a, 'b, 'c> {
     pub(crate) region: Region,
     /// The approximate depth in the tree at the time of painting.
     pub(crate) depth: u32,
+    pub(crate) env: &'a druid::Env,
 }
 
 /// Z-order paint operations with transformations.
@@ -79,6 +81,12 @@ pub(crate) struct ZOrderPaintOp {
     pub paint_func: Box<dyn FnOnce(&mut PaintCtx) + 'static>,
     pub transform: Affine,
 }
+
+impl_context_method!(LayoutCtx<'_, '_>, PaintCtx<'_, '_, '_>, {
+    pub fn env(&self) -> &druid::Env {
+        self.env
+    }
+});
 
 // methods on everyone
 impl_context_method!(
@@ -700,6 +708,7 @@ impl PaintCtx<'_, '_, '_> {
             z_ops: Vec::new(),
             region: region.into(),
             depth: self.depth + 1,
+            env: self.env,
         };
         f(&mut child_ctx);
         self.z_ops.append(&mut child_ctx.z_ops);

@@ -174,6 +174,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
             state: &mut context_state,
             child_state: &mut root.state,
             mouse_pos,
+            env,
         };
 
         root.state.size = root.object.layout(&mut layout_ctx, bc, &mut root.children);
@@ -202,6 +203,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
             region: ctx.region().clone(),
             depth: ctx.depth(),
             render_ctx: ctx.render_ctx,
+            env,
         };
 
         root.object.paint(&mut paint_ctx, &mut root.children);

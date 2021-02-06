@@ -241,9 +241,8 @@ impl RenderObject for Label {
         };
 
         self.layout.set_wrap_width(width);
-        // TODO: This `Env::default()` call keeps logging available locales.
-        self.layout
-            .rebuild_if_needed(ctx.text(), &druid::Env::default());
+        let env = ctx.env().clone();
+        self.layout.rebuild_if_needed(ctx.text(), &env);
 
         let text_metrics = self.layout.layout_metrics();
         ctx.set_baseline_offset(text_metrics.size.height - text_metrics.first_baseline);
