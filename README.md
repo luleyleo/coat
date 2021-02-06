@@ -1,2 +1,1 @@
-# coat
-Explorations in reactive UI patterns
+# This branch only contains screenshots and other resources
