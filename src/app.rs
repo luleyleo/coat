@@ -19,7 +19,8 @@ impl App {
     pub fn run(self, app: impl FnMut(&mut Cx) + 'static) -> Result<(), druid::PlatformError> {
         simple_logger::SimpleLogger::new().init().unwrap();
 
-        druid::AppLauncher::with_window(WindowDesc::new(|| AppWidget::new(app))).launch(())
+        let window = WindowDesc::new(|| AppWidget::new(app)).title(self.name);
+        druid::AppLauncher::with_window(window).launch(())
     }
 }
 
