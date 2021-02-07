@@ -18,37 +18,32 @@ fn app(cx: &mut Cx) {
             .main_axis_alignment(MainAxisAlignment::Start)
             .cross_axis_alignment(CrossAxisAlignment::Center)
             .build(cx, |cx| {
+                fn btn(name: &str, count: usize) -> String {
+                    format!("{} button clicked {} times", name, count)
+                }
+
                 Mutable::new().use_in(cx, |cx, linked_count: &mut usize| {
                     Label::new("Some buttons placed manually:").build(cx);
                     SizedBox::new().height(10.0).empty(cx);
-                    if Button::new()
-                        .labeled(cx, format!("Linked button clicked {} times!", linked_count))
-                    {
+                    if Button::new().labeled(cx, btn("Linked", *linked_count)) {
                         *linked_count += 1;
                     }
                     SizedBox::new().height(20.0).empty(cx);
                     Mutable::new().use_in(cx, |cx, count: &mut usize| {
-                        if Button::new()
-                            .labeled(cx, format!("Lonely button clicked {} times!", count))
-                        {
+                        if Button::new().labeled(cx, btn("Lonely", *count)) {
                             *count += 1;
                         }
                         if *count % 2 == 1 {
                             SizedBox::new().height(10.0).empty(cx);
                             Mutable::new().use_in(cx, |cx, count: &mut usize| {
-                                if Button::new().labeled(
-                                    cx,
-                                    format!("Conditional button clicked {} times!", count),
-                                ) {
+                                if Button::new().labeled(cx, btn("Conditional", *count)) {
                                     *count += 1;
                                 }
                             });
                         }
                     });
                     SizedBox::new().height(20.0).empty(cx);
-                    if Button::new()
-                        .labeled(cx, format!("Linked button clicked {} times!", linked_count))
-                    {
+                    if Button::new().labeled(cx, btn("Linked", *linked_count)) {
                         *linked_count += 1;
                     }
                 });
