@@ -95,6 +95,16 @@ impl RenderObject for ButtonObject {
     type Props = Button;
     type Action = ButtonAction;
 
+    fn create(props: Self::Props) -> Self
+    where
+        Self: Sized,
+    {
+        ButtonObject {
+            props,
+            label_size: Size::ZERO,
+        }
+    }
+
     fn update(&mut self, ctx: &mut UpdateCtx, props: Button) {
         if self.props != props {
             ctx.request_layout();

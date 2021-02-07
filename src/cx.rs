@@ -70,13 +70,15 @@ impl<'a, 'b> Cx<'a, 'b> {
     ) -> Option<R::Action>
     where
         P: Properties<Object = R>,
-        R: RenderObject<Props = P> + Default + Any,
+        R: RenderObject<Props = P> + Any,
         N: FnOnce(&mut Cx),
     {
+        let mut props = Some(props);
         let index = match self.find_render_object(caller) {
             Some(index) => index,
             None => {
-                self.insert_render_object(caller, Box::new(R::default()));
+                let object = R::create(props.take().unwrap());
+                self.insert_render_object(caller, Box::new(object));
                 self.find_render_object(caller).unwrap()
             }
         };
@@ -86,15 +88,17 @@ impl<'a, 'b> Cx<'a, 'b> {
         let node = &mut self.tree.renders[index];
         self.render_index = index + 1;
 
-        if let Some(object) = node.object.as_any().downcast_mut::<R>() {
-            let mut ctx = UpdateCtx {
-                state: self.state,
-                child_state: &mut node.state,
-            };
-            object.update(&mut ctx, props);
-        } else {
-            // TODO: Think of something smart
-            panic!("Wrong node type. Expected {}", std::any::type_name::<R>())
+        if let Some(props) = props {
+            if let Some(object) = node.object.as_any().downcast_mut::<R>() {
+                let mut ctx = UpdateCtx {
+                    state: self.state,
+                    child_state: &mut node.state,
+                };
+                object.update(&mut ctx, props);
+            } else {
+                // TODO: Think of something smart
+                panic!("Wrong node type. Expected {}", std::any::type_name::<R>())
+            }
         }
 
         let mut object_cx = Cx::new(&mut node.children, self.state, self.child_counter);

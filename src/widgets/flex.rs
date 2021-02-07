@@ -30,7 +30,7 @@ struct Spacer {
     len: f64,
 }
 
-#[derive(Copy, Clone, Default, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct Flexible {
     flex: f64,
     alignment: Option<CrossAxisAlignment>,
@@ -276,6 +276,13 @@ impl RenderObject for Flex {
     type Props = Flex;
     type Action = ();
 
+    fn create(props: Self::Props) -> Self
+    where
+        Self: Sized,
+    {
+        props
+    }
+
     fn update(&mut self, ctx: &mut UpdateCtx, props: Self::Props) {
         if self != &props {
             *self = props;
@@ -492,6 +499,13 @@ impl Properties for Flexible {
 impl RenderObject for Flexible {
     type Props = Flexible;
     type Action = ();
+
+    fn create(props: Self::Props) -> Self
+    where
+        Self: Sized,
+    {
+        props
+    }
 
     fn update(&mut self, ctx: &mut UpdateCtx, props: Self::Props) {
         if self != &props {

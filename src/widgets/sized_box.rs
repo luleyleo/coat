@@ -25,10 +25,7 @@ impl Properties for SizedBox {
 impl SizedBox {
     /// Construct container with child, and both width and height not set.
     pub fn new() -> Self {
-        Self {
-            width: None,
-            height: None,
-        }
+        Self::default()
     }
 
     #[track_caller]
@@ -119,6 +116,13 @@ impl SizedBox {
 impl RenderObject for SizedBox {
     type Props = SizedBox;
     type Action = ();
+
+    fn create(props: Self::Props) -> Self
+    where
+        Self: Sized,
+    {
+        props
+    }
 
     fn update(&mut self, ctx: &mut UpdateCtx, props: Self::Props) {
         if self != &props {

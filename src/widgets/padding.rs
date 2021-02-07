@@ -12,7 +12,7 @@ use crate::{
 use std::panic::Location;
 
 /// A widget that just adds padding around its child.
-#[derive(Default, Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Padding {
     left: f64,
     right: f64,
@@ -72,6 +72,13 @@ impl Padding {
 impl RenderObject for Padding {
     type Props = Self;
     type Action = ();
+
+    fn create(props: Self::Props) -> Self
+    where
+        Self: Sized,
+    {
+        props
+    }
 
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, children: &mut Children) {
         children[0].event(ctx, event)

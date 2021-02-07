@@ -16,7 +16,7 @@ const LABEL_X_PADDING: f64 = 2.0;
 /// localized text, use [`Label`].
 ///
 /// [`Label`]: struct.Label.html
-#[derive(Default, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct Label {
     layout: TextLayout<String>,
     line_break_mode: LineBreaking,
@@ -35,12 +35,6 @@ pub enum LineBreaking {
     Clip,
     /// Lines overflow the label.
     Overflow,
-}
-
-impl Default for LineBreaking {
-    fn default() -> Self {
-        LineBreaking::Clip
-    }
 }
 
 impl Label {
@@ -115,6 +109,13 @@ impl Label {
 impl RenderObject for Label {
     type Props = Label;
     type Action = ();
+
+    fn create(props: Self::Props) -> Self
+    where
+        Self: Sized,
+    {
+        props
+    }
 
     fn update(&mut self, ctx: &mut UpdateCtx, props: Label) {
         if self.layout.text() != props.layout.text() {
