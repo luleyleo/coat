@@ -14,7 +14,7 @@ impl<T: Default + 'static> Mutable<T> {
 }
 
 impl<T: 'static> Mutable<T> {
-    pub fn with_default(init: impl FnOnce() -> T + 'static) -> Self {
+    pub fn with(init: impl FnOnce() -> T + 'static) -> Self {
         Mutable {
             init: Box::new(init),
         }

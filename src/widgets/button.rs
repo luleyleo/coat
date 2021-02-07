@@ -12,12 +12,13 @@ use crate::{
     BoxConstraints,
 };
 use druid::Point;
-use style::{Style, StyleSheet};
 
 // the minimum padding added to a button.
 // NOTE: these values are chosen to match the existing look of TextBox; these
 // should be reevaluated at some point.
 const LABEL_INSETS: Insets = Insets::uniform_xy(8., 8.);
+
+pub use style::{Style, StyleSheet};
 
 #[derive(Default, PartialEq)]
 pub struct Button {
@@ -36,6 +37,11 @@ impl Button {
 
     pub fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
+        self
+    }
+
+    pub fn style(mut self, style: impl Into<Box<dyn StyleSheet>>) -> Self {
+        self.style = Some(style.into());
         self
     }
 
@@ -166,16 +172,11 @@ impl RenderObject for ButtonObject {
             .inset(-stroke_width / 2.0)
             .to_rounded_rect(style.border_radius);
 
-        #[allow(clippy::infallible_destructuring_match)]
-        let bg = match style.background {
-            style::Background::Color(color) => color,
-        };
-
         let border_color = style.border_color;
 
         ctx.stroke(rounded_rect, &border_color, stroke_width);
 
-        ctx.fill(rounded_rect, &bg);
+        ctx.fill(rounded_rect, &style.background);
         children[0].paint(ctx);
     }
 }
@@ -190,27 +191,13 @@ pub mod style {
 
     const TRANSPARENT: Color = Color::rgba8(0, 0, 0, 0);
 
-    /// The background of some element.
-    #[derive(Debug, Clone, PartialEq)]
-    pub enum Background {
-        /// A solid color
-        Color(Color),
-        // TODO: Add gradient and image variants
-    }
-
-    impl From<Color> for Background {
-        fn from(color: Color) -> Self {
-            Background::Color(color)
-        }
-    }
-
     /// The appearance of a button.
     #[derive(Debug, Clone)]
     pub struct Style {
         pub border_width: f64,
         pub border_radius: f64,
         pub border_color: Color,
-        pub background: Background,
+        pub background: Color,
 
         pub shadow_offset: Vec2,
         pub text_color: Color,
@@ -220,7 +207,7 @@ pub mod style {
         fn default() -> Self {
             Self {
                 shadow_offset: Vec2::default(),
-                background: Background::Color(TRANSPARENT),
+                background: TRANSPARENT,
                 border_radius: 0.0,
                 border_width: 0.0,
                 border_color: TRANSPARENT,
@@ -253,7 +240,7 @@ pub mod style {
         fn pressed(&self) -> Style {
             Style {
                 shadow_offset: Vec2::default(),
-                ..self.enabled()
+                ..self.hovered()
             }
         }
 
@@ -262,9 +249,7 @@ pub mod style {
 
             Style {
                 shadow_offset: Vec2::default(),
-                background: match active.background {
-                    Background::Color(color) => Background::Color(color.with_alpha(0.5)),
-                },
+                background: active.background.with_alpha(0.5),
                 text_color: active.text_color.with_alpha(0.5),
                 ..active
             }
@@ -282,7 +267,7 @@ pub mod style {
         fn enabled(&self) -> Style {
             Style {
                 shadow_offset: Vec2::new(0.0, 0.0),
-                background: Background::Color(Color::rgb(0.5, 0.5, 0.87)),
+                background: Color::rgb(0.5, 0.5, 0.87),
                 border_radius: 2.0,
                 border_width: 1.0,
                 border_color: Color::rgb(0.7, 0.7, 0.7),
@@ -292,14 +277,14 @@ pub mod style {
 
         fn hovered(&self) -> Style {
             Style {
-                background: Background::Color(Color::rgb(0.6, 0.6, 0.87)),
+                background: Color::rgb(0.6, 0.6, 0.87),
                 ..self.enabled()
             }
         }
 
         fn pressed(&self) -> Style {
             Style {
-                background: Background::Color(Color::rgb(0.6, 0.6, 0.95)),
+                background: Color::rgb(0.6, 0.6, 0.95),
                 ..self.enabled()
             }
         }

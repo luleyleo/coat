@@ -99,6 +99,8 @@ impl<'a, 'b> Cx<'a, 'b> {
 
         let mut object_cx = Cx::new(&mut node.children, self.state, self.child_counter);
         content(&mut object_cx);
+        object_cx.tree.renders.truncate(object_cx.render_index);
+        object_cx.tree.states.truncate(object_cx.state_index);
 
         // TODO: Handle multiple queued actions.
         node.state.has_actions = false;
