@@ -12,7 +12,7 @@ pub mod cx;
 pub mod id;
 pub mod key;
 pub mod render;
-pub mod states;
+pub mod state;
 pub mod tree;
 pub mod widgets;
 

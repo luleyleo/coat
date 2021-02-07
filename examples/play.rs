@@ -1,7 +1,7 @@
 use coat::{
     app::App,
     cx::Cx,
-    states::mutable::Mutable,
+    state::Mutable,
     widgets::{
         flex::{CrossAxisAlignment, Flex, MainAxisAlignment},
         Button, Label, Padding, SizedBox,
