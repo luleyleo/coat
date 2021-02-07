@@ -73,10 +73,7 @@ impl RenderObject for Padding {
     type Props = Self;
     type Action = ();
 
-    fn create(props: Self::Props) -> Self
-    where
-        Self: Sized,
-    {
+    fn create(props: Self::Props) -> Self {
         props
     }
 

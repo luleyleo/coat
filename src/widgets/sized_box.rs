@@ -117,10 +117,7 @@ impl RenderObject for SizedBox {
     type Props = SizedBox;
     type Action = ();
 
-    fn create(props: Self::Props) -> Self
-    where
-        Self: Sized,
-    {
+    fn create(props: Self::Props) -> Self {
         props
     }
 

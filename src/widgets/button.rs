@@ -95,10 +95,7 @@ impl RenderObject for ButtonObject {
     type Props = Button;
     type Action = ButtonAction;
 
-    fn create(props: Self::Props) -> Self
-    where
-        Self: Sized,
-    {
+    fn create(props: Self::Props) -> Self {
         ButtonObject {
             props,
             label_size: Size::ZERO,

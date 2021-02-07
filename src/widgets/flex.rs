@@ -276,10 +276,7 @@ impl RenderObject for Flex {
     type Props = Flex;
     type Action = ();
 
-    fn create(props: Self::Props) -> Self
-    where
-        Self: Sized,
-    {
+    fn create(props: Self::Props) -> Self {
         props
     }
 
@@ -500,10 +497,7 @@ impl RenderObject for Flexible {
     type Props = Flexible;
     type Action = ();
 
-    fn create(props: Self::Props) -> Self
-    where
-        Self: Sized,
-    {
+    fn create(props: Self::Props) -> Self {
         props
     }
 

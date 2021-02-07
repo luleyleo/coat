@@ -33,9 +33,8 @@ pub trait RenderObject {
     type Props: Properties;
     type Action;
 
-    fn create(props: Self::Props) -> Self
-    where
-        Self: Sized;
+    fn create(props: Self::Props) -> Self;
+
     fn update(&mut self, ctx: &mut UpdateCtx, props: Self::Props);
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, children: &mut Children);
     fn lifecycle(&mut self, ctx: &mut LifeCycleCtx, event: &LifeCycle);
