@@ -101,6 +101,8 @@ impl<'a, 'b> Cx<'a, 'b> {
         content(&mut object_cx);
         object_cx.tree.renders.truncate(object_cx.render_index);
         object_cx.tree.states.truncate(object_cx.state_index);
+        object_cx.tree.renders.retain(|c| !c.dead);
+        object_cx.tree.states.retain(|s| !s.dead);
 
         // TODO: Handle multiple queued actions.
         node.state.has_actions = false;

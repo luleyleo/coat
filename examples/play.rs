@@ -26,15 +26,26 @@ fn app(cx: &mut Cx) {
                     {
                         *linked_count += 1;
                     }
-                    SizedBox::new().height(10.0).empty(cx);
+                    SizedBox::new().height(20.0).empty(cx);
                     Mutable::new().use_in(cx, |cx, count: &mut usize| {
                         if Button::new()
                             .labeled(cx, format!("Lonely button clicked {} times!", count))
                         {
                             *count += 1;
                         }
+                        if *count % 2 == 1 {
+                            SizedBox::new().height(10.0).empty(cx);
+                            Mutable::new().use_in(cx, |cx, count: &mut usize| {
+                                if Button::new().labeled(
+                                    cx,
+                                    format!("Conditional button clicked {} times!", count),
+                                ) {
+                                    *count += 1;
+                                }
+                            });
+                        }
                     });
-                    SizedBox::new().height(10.0).empty(cx);
+                    SizedBox::new().height(20.0).empty(cx);
                     if Button::new()
                         .labeled(cx, format!("Linked button clicked {} times!", linked_count))
                     {
