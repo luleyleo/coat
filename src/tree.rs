@@ -9,9 +9,10 @@ use crate::{
     render::AnyRenderObject,
     BoxConstraints,
 };
-use druid::{Cursor, InternalEvent, Region};
+use druid::{Cursor, InternalEvent, Region, TimerToken};
 use std::{
     any::Any,
+    collections::HashMap,
     ops::{Index, IndexMut},
 };
 
@@ -112,6 +113,9 @@ pub struct ChildState {
     /// The result of merging up children cursors. This gets cleared when merging state up (unlike
     /// cursor_change, which is persistent).
     pub(crate) cursor: Option<Cursor>,
+
+    /// Associate timers with widgets that requested them.
+    pub(crate) timers: HashMap<TimerToken, ChildId>,
 }
 
 /// Methods by which a widget can attempt to change focus state.
@@ -678,16 +682,16 @@ impl ChildState {
             //focus_chain: Vec::new(),
             children: Bloom::new(),
             //children_changed: false,
-            //timers: HashMap::new(),
+            timers: HashMap::new(),
             cursor_change: CursorChange::Default,
             cursor: None,
             //sub_window_hosts: Vec::new(),
         }
     }
 
-    // pub(crate) fn add_timer(&mut self, timer_token: TimerToken) {
-    //     self.timers.insert(timer_token, self.id);
-    // }
+    pub(crate) fn add_timer(&mut self, timer_token: TimerToken) {
+        self.timers.insert(timer_token, self.id);
+    }
 
     /// Update to incorporate state changes from a child.
     ///

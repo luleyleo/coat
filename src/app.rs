@@ -78,7 +78,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
             ext_handle: &ext_handle,
             window_id: ctx.window_id(),
             window: &ctx.window().clone(),
-            text: ctx.text(),
+            text: ctx.text().clone(),
             focus_widget,
         };
 
@@ -103,7 +103,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
                     ext_handle: &ext_handle,
                     window_id: ctx.window_id(),
                     window: &ctx.window().clone(),
-                    text: ctx.text(),
+                    text: ctx.text().clone(),
                     focus_widget,
                 };
                 let mut cx = Cx::new(&mut self.root, &mut context_state, &mut self.child_counter);
@@ -130,7 +130,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
                 ext_handle: &ext_handle,
                 window_id: ctx.window_id(),
                 window: &ctx.window().clone(),
-                text: ctx.text(),
+                text: ctx.text().clone(),
                 focus_widget: self.focus_widget,
             };
             let mut cx = Cx::new(&mut self.root, &mut context_state, &mut self.child_counter);
@@ -165,7 +165,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
             ext_handle: &ext_handle,
             window_id: ctx.window_id(),
             window: &ctx.window().clone(),
-            text: ctx.text(),
+            text: ctx.text().clone(),
             focus_widget: self.focus_widget,
         };
 
@@ -188,10 +188,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
             ext_handle: &ext_handle,
             window_id: ctx.window_id(),
             window: &ctx.window().clone(),
-            text: unsafe {
-                // TODO: Again, very bad.
-                (&mut *(ctx as *mut druid::PaintCtx)).text()
-            },
+            text: ctx.text().clone(),
             focus_widget: self.focus_widget,
         };
 

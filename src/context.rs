@@ -1,6 +1,7 @@
 use std::{
     any::Any,
     ops::{Deref, DerefMut},
+    time::Duration,
 };
 
 use crate::{
@@ -9,7 +10,7 @@ use crate::{
     piet::{Piet, PietText, RenderContext},
     tree::{ChildState, CursorChange, FocusChange},
 };
-use druid::{Cursor, ExtEventSink, Region, WindowHandle, WindowId};
+use druid::{Cursor, ExtEventSink, Region, TimerToken, WindowHandle, WindowId};
 
 /// A macro for implementing methods on multiple contexts.
 ///
@@ -30,7 +31,7 @@ pub(crate) struct ContextState<'a> {
     pub(crate) ext_handle: &'a ExtEventSink,
     pub(crate) window_id: WindowId,
     pub(crate) window: &'a WindowHandle,
-    pub(crate) text: &'a mut PietText,
+    pub(crate) text: PietText,
     /// The id of the widget that currently has focus.
     pub(crate) focus_widget: Option<ChildId>,
 }
@@ -388,8 +389,6 @@ impl_context_method!(
     }
 );
 
-/*
-
 // methods on everyone but paintctx
 impl_context_method!(
     EventCtx<'_, '_>,
@@ -397,21 +396,6 @@ impl_context_method!(
     LifeCycleCtx<'_, '_>,
     LayoutCtx<'_, '_>,
     {
-        /// Submit a [`Command`] to be run after this event is handled.
-        ///
-        /// Commands are run in the order they are submitted; all commands
-        /// submitted during the handling of an event are executed before
-        /// the [`update`] method is called; events submitted during [`update`]
-        /// are handled after painting.
-        ///
-        /// [`Target::Auto`] commands will be sent to the window containing the widget.
-        ///
-        /// [`Command`]: struct.Command.html
-        /// [`update`]: trait.Widget.html#tymethod.update
-        pub fn submit_command(&mut self, cmd: impl Into<Command>) {
-            self.state.submit_command(cmd.into())
-        }
-
         /// Returns an [`ExtEventSink`] that can be moved between threads,
         /// and can be used to submit commands back to the application.
         ///
@@ -429,8 +413,6 @@ impl_context_method!(
         }
     }
 );
-
-*/
 
 impl EventCtx<'_, '_> {
     /*
@@ -763,52 +745,28 @@ impl PaintCtx<'_, '_, '_> {
     }
 }
 
-/*
-
 impl<'a> ContextState<'a> {
     pub(crate) fn new<T: 'static>(
-        command_queue: &'a mut CommandQueue,
         ext_handle: &'a ExtEventSink,
         window: &'a WindowHandle,
         window_id: WindowId,
-        focus_widget: Option<WidgetId>,
+        focus_widget: Option<ChildId>,
     ) -> Self {
         ContextState {
-            command_queue,
             ext_handle,
             window,
             window_id,
             focus_widget,
             text: window.text(),
-            root_app_data_type: TypeId::of::<T>(),
         }
     }
 
-    fn submit_command(&mut self, command: Command) {
-        self.command_queue
-            .push_back(command.default_to(self.window_id.into()));
-    }
-
-    fn set_menu<T: Any>(&mut self, menu: MenuDesc<T>) {
-        if self.root_app_data_type == TypeId::of::<T>() {
-            self.submit_command(
-                commands::SET_MENU
-                    .with(Box::new(menu))
-                    .to(Target::Window(self.window_id)),
-            );
-        } else {
-            debug_panic!("EventCtx::set_menu<T> - T must match the application data type.");
-        }
-    }
-
-    fn request_timer(&self, child_state: &mut WidgetState, deadline: Duration) -> TimerToken {
+    fn request_timer(&self, child_state: &mut ChildState, deadline: Duration) -> TimerToken {
         let timer_token = self.window.request_timer(deadline);
         child_state.add_timer(timer_token);
         timer_token
     }
 }
-
-*/
 
 impl<'c> Deref for PaintCtx<'_, '_, 'c> {
     type Target = Piet<'c>;
