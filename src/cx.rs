@@ -1,4 +1,5 @@
 use crate::{
+    bloom::Bloom,
     context::{ContextState, UpdateCtx},
     id::ChildCounter,
     key::Caller,
@@ -103,10 +104,26 @@ impl<'a, 'b> Cx<'a, 'b> {
 
         let mut object_cx = Cx::new(&mut node.children, self.state, self.child_counter);
         content(&mut object_cx);
-        object_cx.tree.renders.truncate(object_cx.render_index);
+
         object_cx.tree.states.truncate(object_cx.state_index);
-        object_cx.tree.renders.retain(|c| !c.dead);
         object_cx.tree.states.retain(|s| !s.dead);
+
+        let old_child_count = object_cx.tree.renders.len();
+        object_cx.tree.renders.truncate(object_cx.render_index);
+        object_cx.tree.renders.retain(|c| !c.dead);
+        let new_child_count = object_cx.tree.renders.len();
+        if old_child_count != new_child_count {
+            // Rebuild the bloom filter.
+            node.state.children =
+                node.children
+                    .renders
+                    .iter()
+                    .map(|c| &c.state)
+                    .fold(Bloom::new(), |mut bloom, child_state| {
+                        bloom.add(&child_state.id);
+                        bloom.union(child_state.children)
+                    });
+        }
 
         // TODO: Handle multiple queued actions.
         node.state.has_actions = false;
