@@ -1,9 +1,9 @@
 use crate::{
     context::{ContextState, EventCtx, LayoutCtx, PaintCtx},
-    cx::Cx,
     id::{ChildCounter, ChildId},
     kurbo::Point,
     tree::{Child, Children},
+    ui::Ui,
 };
 use druid::{ExtEventSink, WindowDesc};
 
@@ -16,7 +16,7 @@ impl App {
         App { name: name.into() }
     }
 
-    pub fn run(self, app: impl FnMut(&mut Cx) + 'static) -> Result<(), druid::PlatformError> {
+    pub fn run(self, app: impl FnMut(&mut Ui) + 'static) -> Result<(), druid::PlatformError> {
         simple_logger::SimpleLogger::new().init().unwrap();
 
         let window = WindowDesc::new(|| AppWidget::new(app)).title(self.name);
@@ -25,7 +25,7 @@ impl App {
 }
 
 struct AppWidget {
-    app: Box<dyn FnMut(&mut Cx)>,
+    app: Box<dyn FnMut(&mut Ui)>,
     root: Children,
     child_counter: ChildCounter,
     focus_widget: Option<ChildId>,
@@ -34,7 +34,7 @@ struct AppWidget {
 }
 
 impl AppWidget {
-    pub fn new(app: impl FnMut(&mut Cx) + 'static) -> Self {
+    pub fn new(app: impl FnMut(&mut Ui) + 'static) -> Self {
         AppWidget {
             app: Box::new(app),
             root: Children::new(),
@@ -121,7 +121,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
                     text: ctx.text().clone(),
                     focus_widget,
                 };
-                let mut cx = Cx::new(&mut self.root, &mut context_state, &mut self.child_counter);
+                let mut cx = Ui::new(&mut self.root, &mut context_state, &mut self.child_counter);
                 (self.app)(&mut cx);
 
                 if !(needs_update) {
@@ -148,7 +148,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
                 text: ctx.text().clone(),
                 focus_widget: self.focus_widget,
             };
-            let mut cx = Cx::new(&mut self.root, &mut context_state, &mut self.child_counter);
+            let mut cx = Ui::new(&mut self.root, &mut context_state, &mut self.child_counter);
             (self.app)(&mut cx);
         }
         if matches!(event, druid::LifeCycle::HotChanged(false)) {

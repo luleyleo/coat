@@ -29,13 +29,13 @@ impl SizedBox {
     }
 
     #[track_caller]
-    pub fn build(self, cx: &mut Cx, content: impl FnOnce(&mut Cx)) {
+    pub fn build(self, ui: &mut Ui, content: impl FnOnce(&mut Ui)) {
         let caller = Location::caller().into();
-        cx.render_object(caller, self, content);
+        ui.render_object(caller, self, content);
     }
 
     #[track_caller]
-    pub fn empty(self, cx: &mut Cx) {
+    pub fn empty(self, cx: &mut Ui) {
         let caller = Location::caller().into();
         cx.render_object(caller, self, |_| {});
     }

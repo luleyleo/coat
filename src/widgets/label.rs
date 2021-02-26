@@ -72,9 +72,9 @@ impl Label {
     }
 
     #[track_caller]
-    pub fn build(self, cx: &mut Cx) {
+    pub fn build(self, ui: &mut Ui) {
         let caller = Location::caller().into();
-        cx.render_object(caller, self, |_| {});
+        ui.render_object(caller, self, |_| {});
     }
 }
 

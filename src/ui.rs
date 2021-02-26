@@ -9,7 +9,7 @@ use crate::{
 use core::panic;
 use std::any::Any;
 
-pub struct Cx<'a, 'b> {
+pub struct Ui<'a, 'b> {
     tree: &'a mut Children,
     state: &'a mut ContextState<'b>,
     child_counter: &'a mut ChildCounter,
@@ -17,13 +17,13 @@ pub struct Cx<'a, 'b> {
     render_index: usize,
 }
 
-impl<'a, 'b> Cx<'a, 'b> {
+impl<'a, 'b> Ui<'a, 'b> {
     pub(crate) fn new(
         tree: &'a mut Children,
         state: &'a mut ContextState<'b>,
         child_counter: &'a mut ChildCounter,
     ) -> Self {
-        Cx {
+        Ui {
             tree,
             state,
             child_counter,
@@ -36,7 +36,7 @@ impl<'a, 'b> Cx<'a, 'b> {
     where
         T: Any,
         I: FnOnce() -> T,
-        N: FnOnce(&mut Cx, &mut T),
+        N: FnOnce(&mut Ui, &mut T),
     {
         let index = self.find_state_node(caller);
         if index.is_none() {
@@ -72,7 +72,7 @@ impl<'a, 'b> Cx<'a, 'b> {
     where
         P: Properties<Object = R>,
         R: RenderObject<P> + Any,
-        N: FnOnce(&mut Cx),
+        N: FnOnce(&mut Ui),
     {
         let mut props = Some(props);
         let index = match self.find_render_object(caller) {
@@ -103,7 +103,7 @@ impl<'a, 'b> Cx<'a, 'b> {
             }
         }
 
-        let mut object_cx = Cx::new(&mut node.children, self.state, self.child_counter);
+        let mut object_cx = Ui::new(&mut node.children, self.state, self.child_counter);
         content(&mut object_cx);
 
         object_cx.tree.states.truncate(object_cx.state_index);
@@ -133,7 +133,7 @@ impl<'a, 'b> Cx<'a, 'b> {
     }
 }
 
-impl Cx<'_, '_> {
+impl Ui<'_, '_> {
     fn find_state_node(&mut self, caller: Caller) -> Option<usize> {
         let mut ix = self.state_index;
         for node in &mut self.tree.states[ix..] {

@@ -182,9 +182,9 @@ pub enum MainAxisAlignment {
 
 impl Flex {
     #[track_caller]
-    pub fn build(self, cx: &mut Cx, content: impl FnOnce(&mut Cx)) {
+    pub fn build(self, ui: &mut Ui, content: impl FnOnce(&mut Ui)) {
         let caller = Location::caller().into();
-        cx.render_object(caller, self, content);
+        ui.render_object(caller, self, content);
     }
 
     /// Create a new Flex oriented along the provided axis.

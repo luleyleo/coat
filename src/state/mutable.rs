@@ -1,4 +1,4 @@
-use crate::cx::Cx;
+use crate::ui::Ui;
 use std::panic::Location;
 
 pub struct Mutable<T> {
@@ -21,7 +21,7 @@ impl<T: 'static> Mutable<T> {
     }
 
     #[track_caller]
-    pub fn use_in(self, cx: &mut Cx, content: impl FnOnce(&mut Cx, &mut T)) {
+    pub fn use_in(self, cx: &mut Ui, content: impl FnOnce(&mut Ui, &mut T)) {
         let caller = Location::caller().into();
         cx.state_node(caller, self.init, content);
     }

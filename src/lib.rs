@@ -7,12 +7,12 @@ pub use druid::{kurbo, piet};
 
 pub mod app;
 pub mod context;
-pub mod cx;
 pub mod id;
 pub mod key;
 pub mod render;
 pub mod state;
 pub mod tree;
+pub mod ui;
 pub mod widgets;
 
 pub mod bloom;

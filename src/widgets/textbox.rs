@@ -37,9 +37,9 @@ impl<'a> TextBox<'a> {
         self
     }
 
-    pub fn build(self, cx: &mut Cx) {
+    pub fn build(self, ui: &mut Ui) {
         let caller = Location::caller().into();
-        cx.render_object(caller, self, |_| {});
+        ui.render_object(caller, self, |_| {});
     }
 }
 
@@ -104,7 +104,6 @@ impl RenderObject<TextBox<'_>> for TextBoxObject {
     }
 
     fn update(&mut self, ctx: &mut UpdateCtx, props: TextBox<'_>) {
-        println!("Update called");
         if props.editable != &self.text {
             if props.editable == self.editor.layout().text().unwrap() {
                 props.editable.replace_range(.., &self.text);

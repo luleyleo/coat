@@ -2,12 +2,12 @@ use std::panic::Location;
 
 use crate::{
     context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx},
-    cx::Cx,
     event::{Event, LifeCycle, MouseButton},
     kurbo::{Insets, Size},
     piet::RenderContext,
     render::{Properties, RenderObject, RenderObjectInterface},
     tree::Children,
+    ui::Ui,
     widgets::label::Label,
     BoxConstraints,
 };
@@ -46,18 +46,18 @@ impl Button {
     }
 
     #[track_caller]
-    pub fn labeled(self, cx: &mut Cx, label: impl Into<String>) -> bool {
+    pub fn labeled(self, ui: &mut Ui, label: impl Into<String>) -> bool {
         let caller = Location::caller().into();
-        cx.render_object(caller, self, |cx| {
-            Label::new(label).build(cx);
+        ui.render_object(caller, self, |ui| {
+            Label::new(label).build(ui);
         })
         .is_some()
     }
 
     #[track_caller]
-    pub fn custom(self, cx: &mut Cx, content: impl FnOnce(&mut Cx)) -> bool {
+    pub fn custom(self, ui: &mut Ui, content: impl FnOnce(&mut Ui)) -> bool {
         let caller = Location::caller().into();
-        cx.render_object(caller, self, content).is_some()
+        ui.render_object(caller, self, content).is_some()
     }
 }
 

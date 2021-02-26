@@ -1,7 +1,7 @@
 use coat::{
     app::App,
-    cx::Cx,
     state::Mutable,
+    ui::Ui,
     widgets::{
         flex::{CrossAxisAlignment, Flex, MainAxisAlignment},
         Button, Label, Padding, SizedBox, TextBox,
@@ -12,66 +12,69 @@ fn main() {
     App::new("Play").run(app).expect("Failed to launch the app");
 }
 
-fn app(cx: &mut Cx) {
-    Padding::new(10.0).build(cx, |cx| {
+fn app(ui: &mut Ui) {
+    Padding::new(10.0).build(ui, |ui| {
         Flex::column()
             .main_axis_alignment(MainAxisAlignment::Start)
             .cross_axis_alignment(CrossAxisAlignment::Center)
-            .build(cx, |cx| {
-                Mutable::with(|| String::from("Hello world!")).use_in(cx, |cx, text: &mut String| {
-                    Label::new(&*text).build(cx);
-                    SizedBox::new().height(5.0).empty(cx);
-                    TextBox::new(text).build(cx);
-                });
+            .build(ui, |ui| {
+                Mutable::with(|| String::from("Hello world!")).use_in(
+                    ui,
+                    |ui, text: &mut String| {
+                        Label::new(&*text).build(ui);
+                        SizedBox::new().height(5.0).empty(ui);
+                        TextBox::new(text).build(ui);
+                    },
+                );
 
-                SizedBox::new().height(10.0).empty(cx);
+                SizedBox::new().height(10.0).empty(ui);
 
                 fn btn(name: &str, count: usize) -> String {
                     format!("{} button clicked {} times", name, count)
                 }
 
-                Mutable::new().use_in(cx, |cx, linked_count: &mut usize| {
-                    Label::new("Some buttons placed manually:").build(cx);
-                    SizedBox::new().height(10.0).empty(cx);
-                    if Button::new().labeled(cx, btn("Linked", *linked_count)) {
+                Mutable::new().use_in(ui, |ui, linked_count: &mut usize| {
+                    Label::new("Some buttons placed manually:").build(ui);
+                    SizedBox::new().height(10.0).empty(ui);
+                    if Button::new().labeled(ui, btn("Linked", *linked_count)) {
                         *linked_count += 1;
                     }
-                    SizedBox::new().height(20.0).empty(cx);
-                    Mutable::new().use_in(cx, |cx, count: &mut usize| {
-                        if Button::new().labeled(cx, btn("Lonely", *count)) {
+                    SizedBox::new().height(20.0).empty(ui);
+                    Mutable::new().use_in(ui, |ui, count: &mut usize| {
+                        if Button::new().labeled(ui, btn("Lonely", *count)) {
                             *count += 1;
                         }
                         if *count % 2 == 1 {
-                            SizedBox::new().height(10.0).empty(cx);
-                            Mutable::new().use_in(cx, |cx, count: &mut usize| {
-                                if Button::new().labeled(cx, btn("Conditional", *count)) {
+                            SizedBox::new().height(10.0).empty(ui);
+                            Mutable::new().use_in(ui, |ui, count: &mut usize| {
+                                if Button::new().labeled(ui, btn("Conditional", *count)) {
                                     *count += 1;
                                 }
                             });
                         }
                     });
-                    SizedBox::new().height(20.0).empty(cx);
-                    if Button::new().labeled(cx, btn("Linked", *linked_count)) {
+                    SizedBox::new().height(20.0).empty(ui);
+                    if Button::new().labeled(ui, btn("Linked", *linked_count)) {
                         *linked_count += 1;
                     }
                 });
 
-                SizedBox::new().height(10.0).empty(cx);
+                SizedBox::new().height(10.0).empty(ui);
 
-                Mutable::with(|| vec![1, 2, 3]).use_in(cx, |cx, buttons| {
+                Mutable::with(|| vec![1, 2, 3]).use_in(ui, |ui, buttons| {
                     Flex::row()
                         .cross_axis_alignment(CrossAxisAlignment::Center)
-                        .build(cx, |cx| {
-                            Label::new("More buttons in a loop:").build(cx);
-                            SizedBox::new().width(5.0).empty(cx);
-                            if Button::new().style(styles::AddButton).labeled(cx, "Add") {
+                        .build(ui, |ui| {
+                            Label::new("More buttons in a loop:").build(ui);
+                            SizedBox::new().width(5.0).empty(ui);
+                            if Button::new().style(styles::AddButton).labeled(ui, "Add") {
                                 buttons.push(3);
                             }
                         });
 
                     for i in buttons.iter_mut() {
-                        SizedBox::new().height(10.0).empty(cx);
-                        if Button::new().labeled(cx, format!("{} hits left", i)) {
+                        SizedBox::new().height(10.0).empty(ui);
+                        if Button::new().labeled(ui, format!("{} hits left", i)) {
                             *i -= 1;
                         }
                     }

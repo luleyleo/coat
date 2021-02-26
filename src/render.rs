@@ -10,12 +10,12 @@ use std::any::Any;
 pub mod prelude {
     pub use crate::{
         context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx},
-        cx::Cx,
         event::{Event, LifeCycle},
         kurbo::Size,
         piet::RenderContext,
         render::{Properties, RenderObject, RenderObjectInterface},
         tree::{Child, Children},
+        ui::Ui,
         BoxConstraints,
     };
     pub use std::panic::Location;
