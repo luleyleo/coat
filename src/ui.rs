@@ -63,12 +63,7 @@ impl<'a, 'b> Ui<'a, 'b> {
         }
     }
 
-    pub fn render_object<P, R, N>(
-        &mut self,
-        caller: Caller,
-        props: P,
-        content: N,
-    ) -> Option<R::Action>
+    pub fn render_object<P, R, N>(&mut self, caller: Caller, props: P, content: N) -> R::Action
     where
         P: Properties<Object = R>,
         R: RenderObject<P> + Any,
@@ -89,13 +84,14 @@ impl<'a, 'b> Ui<'a, 'b> {
         let node = &mut self.tree.renders[index];
         self.render_index = index + 1;
 
+        let mut action = R::Action::default();
         if let Some(props) = props {
             if let Some(object) = node.object.as_any().downcast_mut::<R>() {
                 let mut ctx = UpdateCtx {
                     state: self.state,
                     child_state: &mut node.state,
                 };
-                object.update(&mut ctx, props);
+                action = object.update(&mut ctx, props);
                 node.state.request_update = false;
             } else {
                 // TODO: Think of something smart
@@ -110,7 +106,7 @@ impl<'a, 'b> Ui<'a, 'b> {
         object_cx.tree.states.retain(|s| !s.dead);
         object_cx.tree.renders.truncate(object_cx.render_index);
         object_cx.tree.renders.retain(|c| !c.dead);
-        let new_child_count = object_cx.tree.renders.len();
+
         if true {
             // TODO: Only rebuild when children change.
             // Rebuild the bloom filter.
@@ -123,13 +119,7 @@ impl<'a, 'b> Ui<'a, 'b> {
             );
         }
 
-        // TODO: Handle multiple queued actions.
-        node.state.has_actions = false;
-        if let Some(action) = node.state.actions.pop() {
-            action.downcast::<R::Action>().ok().map(|action| *action)
-        } else {
-            None
-        }
+        action
     }
 }
 

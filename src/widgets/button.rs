@@ -4,8 +4,8 @@ use crate::{
     context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx},
     event::{Event, LifeCycle, MouseButton},
     kurbo::{Insets, Size},
-    piet::RenderContext,
     object::{Properties, RenderObject, RenderObjectInterface},
+    piet::RenderContext,
     tree::Children,
     ui::Ui,
     widgets::label::Label,
@@ -45,19 +45,20 @@ impl Button {
         self
     }
 
+    #[must_use]
     #[track_caller]
     pub fn labeled(self, ui: &mut Ui, label: impl Into<String>) -> bool {
         let caller = Location::caller().into();
         ui.render_object(caller, self, |ui| {
             Label::new(label).build(ui);
         })
-        .is_some()
     }
 
+    #[must_use]
     #[track_caller]
     pub fn custom(self, ui: &mut Ui, content: impl FnOnce(&mut Ui)) -> bool {
         let caller = Location::caller().into();
-        ui.render_object(caller, self, content).is_some()
+        ui.render_object(caller, self, content)
     }
 }
 
@@ -69,6 +70,7 @@ pub enum ButtonAction {
 pub struct ButtonObject {
     props: Button,
     label_size: Size,
+    clicked: bool,
 }
 
 impl ButtonObject {
@@ -92,20 +94,25 @@ impl ButtonObject {
 }
 
 impl RenderObject<Button> for ButtonObject {
-    type Action = ButtonAction;
+    type Action = bool;
 
     fn create(props: Button) -> Self {
         ButtonObject {
             props,
             label_size: Size::ZERO,
+            clicked: false,
         }
     }
 
-    fn update(&mut self, ctx: &mut UpdateCtx, props: Button) {
+    fn update(&mut self, ctx: &mut UpdateCtx, props: Button) -> Self::Action {
         if self.props != props {
             ctx.request_layout();
             self.props = props;
         }
+
+        let was_clicked = self.clicked;
+        self.clicked = false;
+        was_clicked
     }
 }
 
@@ -122,7 +129,8 @@ impl RenderObjectInterface for ButtonObject {
                 if ctx.is_active() && mouse_event.button == MouseButton::Left {
                     ctx.set_active(false);
                     if ctx.is_hot() {
-                        ctx.submit_action(ButtonAction::Clicked);
+                        self.clicked = true;
+                        ctx.request_update();
                         ctx.set_handled();
                     }
                     ctx.request_paint();

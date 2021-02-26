@@ -37,9 +37,9 @@ impl<'a> TextBox<'a> {
         self
     }
 
-    pub fn build(self, ui: &mut Ui) {
+    pub fn build(self, ui: &mut Ui) -> bool {
         let caller = Location::caller().into();
-        ui.render_object(caller, self, |_| {});
+        ui.render_object(caller, self, |_| {})
     }
 }
 
@@ -52,6 +52,7 @@ pub struct TextBoxObject {
     text: String,
     editor: Editor<String>,
     alignment: TextAlignment,
+    activated: bool,
 
     // this can be Box<dyn TextInput> in the future
     input_handler: BasicTextInput,
@@ -84,18 +85,20 @@ impl TextBoxObject {
 }
 
 impl RenderObject<TextBox<'_>> for TextBoxObject {
-    type Action = ();
+    type Action = bool;
 
     fn create(props: TextBox<'_>) -> Self {
         TextBoxObject {
+            placeholder: TextLayout::from_text(props.placeholder),
             text: String::from(&*props.editable),
             editor: Editor::from_text(&*props.editable),
             input_handler: BasicTextInput::default(),
+            activated: false,
+
             hscroll_offset: 0.,
             suppress_adjust_hscroll: false,
             cursor_timer: TimerToken::INVALID,
             cursor_on: false,
-            placeholder: TextLayout::from_text(props.placeholder),
             alignment: TextAlignment::Start,
             alignment_offset: 0.0,
             text_pos: Point::ZERO,
@@ -103,7 +106,7 @@ impl RenderObject<TextBox<'_>> for TextBoxObject {
         }
     }
 
-    fn update(&mut self, ctx: &mut UpdateCtx, props: TextBox<'_>) {
+    fn update(&mut self, ctx: &mut UpdateCtx, props: TextBox<'_>) -> Self::Action {
         if props.editable != &self.text {
             if props.editable == self.editor.layout().text().unwrap() {
                 props.editable.replace_range(.., &self.text);
@@ -122,6 +125,10 @@ impl RenderObject<TextBox<'_>> for TextBoxObject {
             self.alignment = props.alignment;
             ctx.request_layout();
         }
+
+        let was_activated = self.activated;
+        self.activated = false;
+        was_activated
     }
 }
 
@@ -183,16 +190,25 @@ impl RenderObjectInterface for TextBoxObject {
                 }
             }
             Event::KeyDown(key_event) => {
-                println!("Key event received");
                 match key_event {
                     // Tab and shift+tab
                     k_e if HotKey::new(None, KbKey::Tab).matches(k_e) => ctx.focus_next(),
                     k_e if HotKey::new(SysMods::Shift, KbKey::Tab).matches(k_e) => ctx.focus_prev(),
+                    k_e if !self.editor.multiline()
+                        && HotKey::new(None, KbKey::Enter).matches(k_e) =>
+                    {
+                        self.activated = true;
+                        ctx.request_update();
+                    }
+                    k_e if HotKey::new(SysMods::Cmd, KbKey::Enter).matches(k_e) => {
+                        // TODO: Figure out if Cmd/Ctrl is the right modifier for this.
+                        self.activated = true;
+                        ctx.request_update();
+                    }
                     k_e => {
                         if let Some(edit) = self.input_handler.handle_event(k_e) {
                             self.suppress_adjust_hscroll = matches!(edit, EditAction::SelectAll);
                             self.editor.do_edit(edit, &mut self.text);
-                            println!("Update requested");
                             ctx.request_update();
                             ctx.request_paint();
                         }

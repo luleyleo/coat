@@ -23,7 +23,9 @@ fn app(ui: &mut Ui) {
                     |ui, text: &mut String| {
                         Label::new(&*text).build(ui);
                         SizedBox::new().height(5.0).empty(ui);
-                        TextBox::new(text).build(ui);
+                        if TextBox::new(text).build(ui) {
+                            println!("TextBox saying {}", text);
+                        }
                     },
                 );
 

@@ -12,8 +12,8 @@ pub mod prelude {
         context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx},
         event::{Event, LifeCycle},
         kurbo::Size,
-        piet::RenderContext,
         object::{Properties, RenderObject, RenderObjectInterface},
+        piet::RenderContext,
         tree::{Child, Children},
         ui::Ui,
         BoxConstraints,
@@ -26,10 +26,10 @@ pub trait Properties: Sized {
 }
 
 pub trait RenderObject<Props>: RenderObjectInterface {
-    type Action: Any;
+    type Action: Default;
 
     fn create(props: Props) -> Self;
-    fn update(&mut self, ctx: &mut UpdateCtx, props: Props);
+    fn update(&mut self, ctx: &mut UpdateCtx, props: Props) -> Self::Action;
 }
 
 pub trait RenderObjectInterface {

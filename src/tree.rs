@@ -5,8 +5,8 @@ use crate::{
     id::ChildId,
     key::Caller,
     kurbo::{Affine, Insets, Point, Rect, Shape, Size, Vec2},
-    piet::RenderContext,
     object::AnyRenderObject,
+    piet::RenderContext,
     BoxConstraints,
 };
 use druid::{Cursor, InternalEvent, Region, TimerToken};
@@ -43,9 +43,6 @@ pub struct Child {
 }
 
 pub struct ChildState {
-    pub(crate) actions: Vec<Box<dyn Any>>,
-    pub(crate) has_actions: bool,
-
     pub(crate) id: ChildId,
 
     /// The size of the child; this is the value returned by the child's layout
@@ -647,7 +644,7 @@ impl Child {
     }
 
     pub(crate) fn needs_update(&self) -> bool {
-        self.state.has_actions || self.state.request_update
+        self.state.request_update
     }
 }
 
@@ -688,8 +685,6 @@ impl ChildState {
     pub(crate) fn new(id: ChildId, size: Option<Size>) -> Self {
         ChildState {
             id,
-            actions: Vec::new(),
-            has_actions: false,
             origin: Point::ORIGIN,
             parent_window_origin: Point::ORIGIN,
             size: size.unwrap_or_default(),
@@ -751,8 +746,6 @@ impl ChildState {
         self.request_update |= child_state.request_update;
         self.request_focus = child_state.request_focus.take().or(self.request_focus);
         //self.timers.extend_drain(&mut child_state.timers);
-
-        self.has_actions = !self.actions.is_empty() || child_state.has_actions;
 
         // We reset `child_state.cursor` no matter what, so that on the every pass through the tree,
         // things will be recalculated just from `cursor_change`.

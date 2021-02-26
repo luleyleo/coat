@@ -2,8 +2,8 @@
 
 use crate::{
     kurbo::Point,
-    piet::{Color, TextAlignment},
     object::prelude::*,
+    piet::{Color, TextAlignment},
     text::{FontDescriptor, TextLayout},
 };
 
