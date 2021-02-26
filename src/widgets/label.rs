@@ -99,6 +99,8 @@ impl Label {
         }
     }
 
+    #[allow(dead_code)]
+    // TODO: Find out what this was good for.
     /// Return the offset of the first baseline relative to the bottom of the widget.
     fn baseline_offset(&self) -> f64 {
         let text_metrics = self.layout.layout_metrics();
@@ -125,15 +127,15 @@ impl RenderObject<Label> for Label {
 }
 
 impl RenderObjectInterface for Label {
-    fn event(&mut self, _ctx: &mut EventCtx, _event: &Event, children: &mut Children) {}
+    fn event(&mut self, _ctx: &mut EventCtx, _event: &Event, _children: &mut Children) {}
 
-    fn lifecycle(&mut self, _ctx: &mut LifeCycleCtx, event: &LifeCycle) {}
+    fn lifecycle(&mut self, _ctx: &mut LifeCycleCtx, _event: &LifeCycle) {}
 
     fn layout(
         &mut self,
         ctx: &mut LayoutCtx,
         bc: &BoxConstraints,
-        children: &mut Children,
+        _children: &mut Children,
     ) -> Size {
         bc.debug_check("Label");
 
@@ -154,7 +156,7 @@ impl RenderObjectInterface for Label {
         ))
     }
 
-    fn paint(&mut self, ctx: &mut PaintCtx, children: &mut Children) {
+    fn paint(&mut self, ctx: &mut PaintCtx, _children: &mut Children) {
         let origin = Point::new(LABEL_X_PADDING, 0.0);
         let label_size = ctx.size();
 

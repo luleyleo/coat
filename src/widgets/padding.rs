@@ -89,7 +89,7 @@ impl RenderObjectInterface for Padding {
         children[0].event(ctx, event)
     }
 
-    fn lifecycle(&mut self, ctx: &mut LifeCycleCtx, event: &LifeCycle) {}
+    fn lifecycle(&mut self, _ctx: &mut LifeCycleCtx, _event: &LifeCycle) {}
 
     fn layout(
         &mut self,

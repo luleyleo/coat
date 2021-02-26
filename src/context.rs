@@ -723,21 +723,6 @@ impl PaintCtx<'_, '_, '_> {
 }
 
 impl<'a> ContextState<'a> {
-    pub(crate) fn new<T: 'static>(
-        ext_handle: &'a ExtEventSink,
-        window: &'a WindowHandle,
-        window_id: WindowId,
-        focus_widget: Option<ChildId>,
-    ) -> Self {
-        ContextState {
-            ext_handle,
-            window,
-            window_id,
-            focus_widget,
-            text: window.text(),
-        }
-    }
-
     fn request_timer(&self, child_state: &mut ChildState, deadline: Duration) -> TimerToken {
         let timer_token = self.window.request_timer(deadline);
         child_state.add_timer(timer_token);

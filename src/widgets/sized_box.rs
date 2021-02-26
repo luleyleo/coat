@@ -106,11 +106,6 @@ impl SizedBox {
             Size::new(max_width, max_height),
         )
     }
-
-    #[cfg(test)]
-    pub(crate) fn width_and_height(&self) -> (Option<f64>, Option<f64>) {
-        (self.width, self.height)
-    }
 }
 
 impl RenderObject<SizedBox> for SizedBox {
@@ -135,7 +130,7 @@ impl RenderObjectInterface for SizedBox {
         }
     }
 
-    fn lifecycle(&mut self, ctx: &mut LifeCycleCtx, event: &LifeCycle) {}
+    fn lifecycle(&mut self, _ctx: &mut LifeCycleCtx, _event: &LifeCycle) {}
 
     fn layout(
         &mut self,

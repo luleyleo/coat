@@ -3,7 +3,7 @@ use std::panic::Location;
 use crate::{
     context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx},
     event::{Event, LifeCycle, MouseButton},
-    kurbo::{Insets, Size},
+    kurbo::Size,
     object::{Properties, RenderObject, RenderObjectInterface},
     piet::RenderContext,
     tree::Children,
@@ -12,11 +12,6 @@ use crate::{
     BoxConstraints,
 };
 use druid::Point;
-
-// the minimum padding added to a button.
-// NOTE: these values are chosen to match the existing look of TextBox; these
-// should be reevaluated at some point.
-const LABEL_INSETS: Insets = Insets::uniform_xy(8., 8.);
 
 pub use style::{Style, StyleSheet};
 
@@ -177,8 +172,6 @@ impl RenderObjectInterface for ButtonObject {
     }
 
     fn paint(&mut self, ctx: &mut PaintCtx, children: &mut Children) {
-        let is_active = ctx.is_active();
-        let is_hot = ctx.is_hot();
         let size = ctx.size();
         let style = self.style(ctx.is_hot(), ctx.is_active());
         let stroke_width = style.border_width;
@@ -271,7 +264,7 @@ pub mod style {
             }
         }
 
-        fn pick_size(&self, bc: &BoxConstraints, required_size: Size) -> Size {
+        fn pick_size(&self, _bc: &BoxConstraints, required_size: Size) -> Size {
             Size::new(required_size.width, f64::max(required_size.height, 24.0))
         }
     }

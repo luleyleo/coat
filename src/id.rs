@@ -15,16 +15,6 @@ impl ChildCounter {
 
 #[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
 pub struct ChildId(usize);
-impl ChildId {
-    pub(crate) fn new(inner: usize) -> Self {
-        ChildId(inner)
-    }
-}
 
 #[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
 pub struct WindowId(usize);
-impl WindowId {
-    pub(crate) fn new(inner: usize) -> Self {
-        WindowId(inner)
-    }
-}

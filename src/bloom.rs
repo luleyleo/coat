@@ -13,6 +13,7 @@
 // limitations under the License.
 
 //! A simple Bloom filter, used to track child widgets.
+#![allow(dead_code)]
 
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;

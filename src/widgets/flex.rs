@@ -24,12 +24,6 @@ impl Default for Flex {
     }
 }
 
-/// A dummy widget we use to do spacing.
-struct Spacer {
-    axis: Axis,
-    len: f64,
-}
-
 #[derive(Copy, Clone, PartialEq)]
 pub struct Flexible {
     flex: f64,
@@ -294,7 +288,7 @@ impl RenderObjectInterface for Flex {
         }
     }
 
-    fn lifecycle(&mut self, ctx: &mut LifeCycleCtx, event: &LifeCycle) {}
+    fn lifecycle(&mut self, _ctx: &mut LifeCycleCtx, _event: &LifeCycle) {}
 
     fn layout(
         &mut self,
@@ -513,7 +507,7 @@ impl RenderObjectInterface for Flexible {
         children[0].event(ctx, event);
     }
 
-    fn lifecycle(&mut self, ctx: &mut LifeCycleCtx, event: &LifeCycle) {}
+    fn lifecycle(&mut self, _ctx: &mut LifeCycleCtx, _event: &LifeCycle) {}
 
     fn layout(
         &mut self,

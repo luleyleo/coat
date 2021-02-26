@@ -8,7 +8,6 @@ use druid::{
 };
 use std::time::Duration;
 
-const MAC_OR_LINUX: bool = cfg!(any(target_os = "macos", target_os = "linux"));
 const CURSOR_BLINK_DURATION: Duration = Duration::from_millis(500);
 
 #[derive(PartialEq)]
@@ -133,7 +132,7 @@ impl RenderObject<TextBox<'_>> for TextBoxObject {
 }
 
 impl RenderObjectInterface for TextBoxObject {
-    fn event(&mut self, ctx: &mut EventCtx, event: &Event, children: &mut Children) {
+    fn event(&mut self, ctx: &mut EventCtx, event: &Event, _children: &mut Children) {
         self.suppress_adjust_hscroll = false;
         match event {
             Event::MouseDown(mouse) => {
@@ -221,13 +220,13 @@ impl RenderObjectInterface for TextBoxObject {
         }
     }
 
-    fn lifecycle(&mut self, ctx: &mut LifeCycleCtx, event: &LifeCycle) {}
+    fn lifecycle(&mut self, _ctx: &mut LifeCycleCtx, _event: &LifeCycle) {}
 
     fn layout(
         &mut self,
         ctx: &mut LayoutCtx,
         bc: &BoxConstraints,
-        children: &mut Children,
+        _children: &mut Children,
     ) -> Size {
         let width = 200.0;
         let text_insets = Insets::uniform(3.0);
@@ -260,7 +259,7 @@ impl RenderObjectInterface for TextBoxObject {
         size
     }
 
-    fn paint(&mut self, ctx: &mut PaintCtx, children: &mut Children) {
+    fn paint(&mut self, ctx: &mut PaintCtx, _children: &mut Children) {
         let size = ctx.size();
         let background_color = Color::GRAY;
         let selection_color = Color::BLUE;
@@ -353,8 +352,10 @@ impl TextBoxObject {
         self.editor.rebuild_if_needed(factory, env);
     }
 
+    #[allow(dead_code)]
+    // TODO: Figure out what this was good for.
     /// Calculate a stateful scroll offset
-    fn update_hscroll(&mut self, self_width: f64, env: &druid::Env) {
+    fn update_hscroll(&mut self, self_width: f64, _env: &druid::Env) {
         let cursor_x = self.editor.cursor_line().p0.x;
         // if the text ends in trailing whitespace, that space is not included
         // in its reported width, but we need to include it for these calculations.

@@ -100,8 +100,8 @@ impl TextStorage for RichText {
 ///
 /// # Example
 /// ```
-/// # use druid::text::{Attribute, RichTextBuilder};
-/// # use druid::FontWeight;
+/// # use coat::text::{Attribute, RichTextBuilder};
+/// # use coat::piet::FontWeight;
 /// let mut builder = RichTextBuilder::new();
 /// builder.push("Hello ");
 /// builder.push("World!").weight(FontWeight::BOLD);

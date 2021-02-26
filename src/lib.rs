@@ -1,6 +1,3 @@
-#![allow(unused_variables)]
-#![allow(unreachable_code)]
-#![allow(dead_code)]
 #![allow(clippy::clippy::new_without_default)]
 
 pub use druid::{kurbo, piet};

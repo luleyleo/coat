@@ -22,12 +22,6 @@ pub struct Children {
     pub(crate) renders: Vec<Child>,
 }
 
-pub struct TreeIter<'a> {
-    tree: &'a mut Children,
-    state_index: usize,
-    render_index: usize,
-}
-
 pub struct State {
     pub(crate) key: Caller,
     pub(crate) state: Box<dyn Any>,
@@ -146,16 +140,6 @@ impl Children {
     }
 }
 
-impl<'a> TreeIter<'a> {
-    fn new(tree: &'a mut Children) -> Self {
-        TreeIter {
-            tree,
-            state_index: 0,
-            render_index: 0,
-        }
-    }
-}
-
 /// Public API for accessing children.
 impl Children {
     pub fn len(&self) -> usize {
@@ -220,8 +204,8 @@ impl Child {
                     );
                     had_active || hot_changed
                 }
-                InternalEvent::TargetedCommand(cmd) => false,
-                InternalEvent::RouteTimer(token, widget_id) => false,
+                InternalEvent::TargetedCommand(_cmd) => false,
+                InternalEvent::RouteTimer(_token, _widget_id) => false,
             },
             Event::WindowConnected => true,
             Event::WindowSize(_) => {
