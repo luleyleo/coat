@@ -177,8 +177,7 @@ impl_context_method!(
         /// [`LifeCycle::FocusChanged`]: enum.LifeCycle.html#variant.FocusChanged
         /// [`has_focus`]: #method.has_focus
         pub fn is_focused(&self) -> bool {
-            // TODO: self.state.focus_widget == Some(self.widget_id())
-            false
+            self.state.focus_widget == Some(self.child_state.id)
         }
 
         /// The (tree) focus status of a widget.

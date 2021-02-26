@@ -4,7 +4,7 @@ use coat::{
     state::Mutable,
     widgets::{
         flex::{CrossAxisAlignment, Flex, MainAxisAlignment},
-        Button, Label, Padding, SizedBox,
+        Button, Label, Padding, SizedBox, TextBox,
     },
 };
 
@@ -18,6 +18,14 @@ fn app(cx: &mut Cx) {
             .main_axis_alignment(MainAxisAlignment::Start)
             .cross_axis_alignment(CrossAxisAlignment::Center)
             .build(cx, |cx| {
+                Mutable::with(|| String::from("Hello world!")).use_in(cx, |cx, text: &mut String| {
+                    Label::new(&*text).build(cx);
+                    SizedBox::new().height(5.0).empty(cx);
+                    TextBox::new(text).build(cx);
+                });
+
+                SizedBox::new().height(10.0).empty(cx);
+
                 fn btn(name: &str, count: usize) -> String {
                     format!("{} button clicked {} times", name, count)
                 }

@@ -272,21 +272,22 @@ impl Properties for Flex {
     type Object = Flex;
 }
 
-impl RenderObject for Flex {
-    type Props = Flex;
+impl RenderObject<Flex> for Flex {
     type Action = ();
 
-    fn create(props: Self::Props) -> Self {
+    fn create(props: Flex) -> Self {
         props
     }
 
-    fn update(&mut self, ctx: &mut UpdateCtx, props: Self::Props) {
+    fn update(&mut self, ctx: &mut UpdateCtx, props: Flex) {
         if self != &props {
             *self = props;
             ctx.request_layout();
         }
     }
+}
 
+impl RenderObjectInterface for Flex {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, children: &mut Children) {
         for child in children {
             child.event(ctx, event);
@@ -493,21 +494,21 @@ impl RenderObject for Flex {
 impl Properties for Flexible {
     type Object = Flexible;
 }
-impl RenderObject for Flexible {
-    type Props = Flexible;
+impl RenderObject<Flexible> for Flexible {
     type Action = ();
 
-    fn create(props: Self::Props) -> Self {
+    fn create(props: Flexible) -> Self {
         props
     }
 
-    fn update(&mut self, ctx: &mut UpdateCtx, props: Self::Props) {
+    fn update(&mut self, ctx: &mut UpdateCtx, props: Flexible) {
         if self != &props {
             *self = props;
             ctx.request_layout();
         }
     }
-
+}
+impl RenderObjectInterface for Flexible {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, children: &mut Children) {
         children[0].event(ctx, event);
     }

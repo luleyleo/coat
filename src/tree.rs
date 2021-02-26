@@ -624,6 +624,33 @@ impl Child {
     }
 }
 
+impl Child {
+    pub(crate) fn update_focus(&mut self, focus: Option<ChildId>) -> bool {
+        if let Some(focus) = focus {
+            if self.state.id == focus {
+                self.state.has_focus = true;
+            } else if self.state.children.may_contain(&focus) {
+                self.state.has_focus = false;
+                for child in self.children.iter() {
+                    self.state.has_focus |= child.update_focus(Some(focus));
+                }
+            }
+        } else {
+            if self.state.has_focus {
+                for child in self.children.iter() {
+                    child.update_focus(None);
+                }
+            }
+            self.state.has_focus = false;
+        }
+        self.state.has_focus
+    }
+
+    pub(crate) fn needs_update(&self) -> bool {
+        self.state.has_actions || self.state.request_update
+    }
+}
+
 /// Allows iterating over a set of [`Children`].
 pub struct ChildIter<'a> {
     children: &'a mut Children,

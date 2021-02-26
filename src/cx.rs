@@ -71,7 +71,7 @@ impl<'a, 'b> Cx<'a, 'b> {
     ) -> Option<R::Action>
     where
         P: Properties<Object = R>,
-        R: RenderObject<Props = P> + Any,
+        R: RenderObject<P> + Any,
         N: FnOnce(&mut Cx),
     {
         let mut props = Some(props);
@@ -96,6 +96,7 @@ impl<'a, 'b> Cx<'a, 'b> {
                     child_state: &mut node.state,
                 };
                 object.update(&mut ctx, props);
+                node.state.request_update = false;
             } else {
                 // TODO: Think of something smart
                 panic!("Wrong node type. Expected {}", std::any::type_name::<R>())
@@ -107,22 +108,19 @@ impl<'a, 'b> Cx<'a, 'b> {
 
         object_cx.tree.states.truncate(object_cx.state_index);
         object_cx.tree.states.retain(|s| !s.dead);
-
-        let old_child_count = object_cx.tree.renders.len();
         object_cx.tree.renders.truncate(object_cx.render_index);
         object_cx.tree.renders.retain(|c| !c.dead);
         let new_child_count = object_cx.tree.renders.len();
-        if old_child_count != new_child_count {
+        if true {
+            // TODO: Only rebuild when children change.
             // Rebuild the bloom filter.
-            node.state.children =
-                node.children
-                    .renders
-                    .iter()
-                    .map(|c| &c.state)
-                    .fold(Bloom::new(), |mut bloom, child_state| {
-                        bloom.add(&child_state.id);
-                        bloom.union(child_state.children)
-                    });
+            node.state.children = node.children.renders.iter().map(|c| &c.state).fold(
+                Bloom::new(),
+                |mut bloom, child_state| {
+                    bloom.add(&child_state.id);
+                    bloom.union(child_state.children)
+                },
+            );
         }
 
         // TODO: Handle multiple queued actions.

@@ -3,10 +3,9 @@
 #![allow(dead_code)]
 #![allow(clippy::clippy::new_without_default)]
 
-pub use druid::{kurbo, piet, text};
+pub use druid::{kurbo, piet};
 
 pub mod app;
-pub mod bloom;
 pub mod context;
 pub mod cx;
 pub mod id;
@@ -15,6 +14,9 @@ pub mod render;
 pub mod state;
 pub mod tree;
 pub mod widgets;
+
+pub mod bloom;
+pub mod text;
 
 pub mod event {
     pub use druid::{Event, LifeCycle};

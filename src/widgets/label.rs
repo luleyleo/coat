@@ -106,11 +106,10 @@ impl Label {
     }
 }
 
-impl RenderObject for Label {
-    type Props = Label;
+impl RenderObject<Label> for Label {
     type Action = ();
 
-    fn create(props: Self::Props) -> Self {
+    fn create(props: Label) -> Self {
         props
     }
 
@@ -123,7 +122,9 @@ impl RenderObject for Label {
             ctx.request_layout();
         }
     }
+}
 
+impl RenderObjectInterface for Label {
     fn event(&mut self, _ctx: &mut EventCtx, _event: &Event, children: &mut Children) {}
 
     fn lifecycle(&mut self, _ctx: &mut LifeCycleCtx, event: &LifeCycle) {}

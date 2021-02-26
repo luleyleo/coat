@@ -6,7 +6,7 @@ use crate::{
     event::{Event, LifeCycle, MouseButton},
     kurbo::{Insets, Size},
     piet::RenderContext,
-    render::{Properties, RenderObject},
+    render::{Properties, RenderObject, RenderObjectInterface},
     tree::Children,
     widgets::label::Label,
     BoxConstraints,
@@ -91,11 +91,10 @@ impl ButtonObject {
     }
 }
 
-impl RenderObject for ButtonObject {
-    type Props = Button;
+impl RenderObject<Button> for ButtonObject {
     type Action = ButtonAction;
 
-    fn create(props: Self::Props) -> Self {
+    fn create(props: Button) -> Self {
         ButtonObject {
             props,
             label_size: Size::ZERO,
@@ -108,7 +107,9 @@ impl RenderObject for ButtonObject {
             self.props = props;
         }
     }
+}
 
+impl RenderObjectInterface for ButtonObject {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, children: &mut Children) {
         match event {
             Event::MouseDown(mouse_event) => {

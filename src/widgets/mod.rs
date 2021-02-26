@@ -10,5 +10,8 @@ pub use padding::Padding;
 pub mod sized_box;
 pub use sized_box::SizedBox;
 
-pub use flex::Flex;
 pub mod flex;
+pub use flex::Flex;
+
+pub mod textbox;
+pub use textbox::TextBox;

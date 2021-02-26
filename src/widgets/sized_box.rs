@@ -113,21 +113,22 @@ impl SizedBox {
     }
 }
 
-impl RenderObject for SizedBox {
-    type Props = SizedBox;
+impl RenderObject<SizedBox> for SizedBox {
     type Action = ();
 
-    fn create(props: Self::Props) -> Self {
+    fn create(props: SizedBox) -> Self {
         props
     }
 
-    fn update(&mut self, ctx: &mut UpdateCtx, props: Self::Props) {
+    fn update(&mut self, ctx: &mut UpdateCtx, props: SizedBox) {
         if self != &props {
             ctx.request_layout();
             *self = props;
         }
     }
+}
 
+impl RenderObjectInterface for SizedBox {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, children: &mut Children) {
         if !children.is_empty() {
             children[0].event(ctx, event);

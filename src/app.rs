@@ -61,6 +61,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
         env: &druid::Env,
     ) {
         ctx.set_active(true);
+        ctx.request_focus();
         let ext_handle = ctx.get_external_handle();
 
         match event {
@@ -94,9 +95,23 @@ impl druid::Widget<AppWidgetData> for AppWidget {
         ctx.request_paint_rect(root.state.invalid.bounding_box());
         ctx.request_layout();
 
-        if self.root().state.has_actions {
+        let old_focus_widget = self.focus_widget;
+        if let Some(focus_change) = self.root().state.request_focus {
+            match focus_change {
+                crate::tree::FocusChange::Resign => self.focus_widget = None,
+                crate::tree::FocusChange::Focus(id) => self.focus_widget = Some(id),
+                crate::tree::FocusChange::Next => {}
+                crate::tree::FocusChange::Previous => {}
+            }
+        }
+        if self.focus_widget != old_focus_widget {
+            let new_focus_widget = self.focus_widget;
+            self.root().update_focus(new_focus_widget);
+        }
+
+        if self.root().needs_update() {
             loop {
-                let had_actions = self.root().state.has_actions;
+                let needs_update = self.root().needs_update();
 
                 let ext_handle = ctx.get_external_handle();
                 let mut context_state = ContextState {
@@ -109,7 +124,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
                 let mut cx = Cx::new(&mut self.root, &mut context_state, &mut self.child_counter);
                 (self.app)(&mut cx);
 
-                if !had_actions {
+                if !(needs_update) {
                     break;
                 }
             }

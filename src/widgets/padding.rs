@@ -5,7 +5,7 @@ use crate::{
     cx::Cx,
     event::{Event, LifeCycle},
     kurbo::{Insets, Point, Size},
-    render::{Properties, RenderObject},
+    render::{Properties, RenderObject, RenderObjectInterface},
     tree::Children,
     BoxConstraints,
 };
@@ -69,19 +69,12 @@ impl Padding {
     }
 }
 
-impl RenderObject for Padding {
-    type Props = Self;
+impl RenderObject<Padding> for Padding {
     type Action = ();
 
-    fn create(props: Self::Props) -> Self {
+    fn create(props: Padding) -> Self {
         props
     }
-
-    fn event(&mut self, ctx: &mut EventCtx, event: &Event, children: &mut Children) {
-        children[0].event(ctx, event)
-    }
-
-    fn lifecycle(&mut self, ctx: &mut LifeCycleCtx, event: &LifeCycle) {}
 
     fn update(&mut self, ctx: &mut UpdateCtx, props: Padding) {
         if self != &props {
@@ -89,6 +82,14 @@ impl RenderObject for Padding {
             ctx.request_layout();
         }
     }
+}
+
+impl RenderObjectInterface for Padding {
+    fn event(&mut self, ctx: &mut EventCtx, event: &Event, children: &mut Children) {
+        children[0].event(ctx, event)
+    }
+
+    fn lifecycle(&mut self, ctx: &mut LifeCycleCtx, event: &LifeCycle) {}
 
     fn layout(
         &mut self,

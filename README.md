@@ -20,6 +20,7 @@ Except for the files listed below, all files in this repo are released under the
 Some code has been cut and pasted from Druid, therefore carries a copyright of "The Druid Authors". See the [Druid repo] for the definitive authors list.
 
 - `src/bloom.rs`
+- `src/text/*.rs`
 
 [Druid repo]: https://github.com/linebender/druid
 [Druid]: https://github.com/linebender/druid

@@ -14,28 +14,25 @@ pub mod prelude {
         event::{Event, LifeCycle},
         kurbo::Size,
         piet::RenderContext,
-        render::{Properties, RenderObject},
+        render::{Properties, RenderObject, RenderObjectInterface},
         tree::{Child, Children},
         BoxConstraints,
     };
     pub use std::panic::Location;
 }
 
-pub trait Properties {
-    type Object: RenderObject;
-
-    fn name() -> &'static str {
-        std::any::type_name::<Self>()
-    }
+pub trait Properties: Sized {
+    type Object: RenderObject<Self>;
 }
 
-pub trait RenderObject {
-    type Props: Properties;
-    type Action;
+pub trait RenderObject<Props>: RenderObjectInterface {
+    type Action: Any;
 
-    fn create(props: Self::Props) -> Self;
+    fn create(props: Props) -> Self;
+    fn update(&mut self, ctx: &mut UpdateCtx, props: Props);
+}
 
-    fn update(&mut self, ctx: &mut UpdateCtx, props: Self::Props);
+pub trait RenderObjectInterface {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, children: &mut Children);
     fn lifecycle(&mut self, ctx: &mut LifeCycleCtx, event: &LifeCycle);
     fn layout(&mut self, ctx: &mut LayoutCtx, bc: &BoxConstraints, children: &mut Children)
@@ -56,14 +53,14 @@ pub trait AnyRenderObject: Any {
 
 impl<R> AnyRenderObject for R
 where
-    R: RenderObject + Any,
+    R: RenderObjectInterface + Any,
 {
     fn as_any(&mut self) -> &mut dyn Any {
         self
     }
 
     fn name(&self) -> &'static str {
-        <R::Props as Properties>::name()
+        "" //<R::Props<'_> as Properties>::name()
     }
 
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, children: &mut Children) {
