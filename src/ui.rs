@@ -3,7 +3,7 @@ use crate::{
     context::{ContextState, UpdateCtx},
     id::ChildCounter,
     key::Caller,
-    render::{AnyRenderObject, Properties, RenderObject},
+    object::{AnyRenderObject, Properties, RenderObject},
     tree::{Child, ChildState, Children, State},
 };
 use core::panic;

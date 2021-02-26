@@ -5,7 +5,7 @@ use crate::{
     event::{Event, LifeCycle, MouseButton},
     kurbo::{Insets, Size},
     piet::RenderContext,
-    render::{Properties, RenderObject, RenderObjectInterface},
+    object::{Properties, RenderObject, RenderObjectInterface},
     tree::Children,
     ui::Ui,
     widgets::label::Label,

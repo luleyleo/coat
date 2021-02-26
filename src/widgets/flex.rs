@@ -2,7 +2,7 @@
 
 use crate::{
     kurbo::{common::FloatExt, Point, Rect},
-    render::prelude::*,
+    object::prelude::*,
 };
 
 #[derive(PartialEq)]

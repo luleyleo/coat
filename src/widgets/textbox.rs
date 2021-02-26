@@ -1,5 +1,5 @@
 use crate::{
-    render::prelude::*,
+    object::prelude::*,
     text::{BasicTextInput, EditAction, Editor, LayoutMetrics, Selection, TextInput, TextLayout},
 };
 use druid::{

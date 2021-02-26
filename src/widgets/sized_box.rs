@@ -1,6 +1,6 @@
 //! A widget with predefined size.
 
-use crate::render::prelude::*;
+use crate::object::prelude::*;
 use std::f64::INFINITY;
 
 /// A widget with predefined size.

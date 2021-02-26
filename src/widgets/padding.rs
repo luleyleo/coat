@@ -4,7 +4,7 @@ use crate::{
     context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx},
     event::{Event, LifeCycle},
     kurbo::{Insets, Point, Size},
-    render::{Properties, RenderObject, RenderObjectInterface},
+    object::{Properties, RenderObject, RenderObjectInterface},
     tree::Children,
     ui::Ui,
     BoxConstraints,

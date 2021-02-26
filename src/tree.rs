@@ -6,7 +6,7 @@ use crate::{
     key::Caller,
     kurbo::{Affine, Insets, Point, Rect, Shape, Size, Vec2},
     piet::RenderContext,
-    render::AnyRenderObject,
+    object::AnyRenderObject,
     BoxConstraints,
 };
 use druid::{Cursor, InternalEvent, Region, TimerToken};

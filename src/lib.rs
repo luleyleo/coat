@@ -9,7 +9,7 @@ pub mod app;
 pub mod context;
 pub mod id;
 pub mod key;
-pub mod render;
+pub mod object;
 pub mod state;
 pub mod tree;
 pub mod ui;

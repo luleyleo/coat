@@ -13,7 +13,7 @@ pub mod prelude {
         event::{Event, LifeCycle},
         kurbo::Size,
         piet::RenderContext,
-        render::{Properties, RenderObject, RenderObjectInterface},
+        object::{Properties, RenderObject, RenderObjectInterface},
         tree::{Child, Children},
         ui::Ui,
         BoxConstraints,

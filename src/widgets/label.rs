@@ -3,7 +3,7 @@
 use crate::{
     kurbo::Point,
     piet::{Color, TextAlignment},
-    render::prelude::*,
+    object::prelude::*,
     text::{FontDescriptor, TextLayout},
 };
 
