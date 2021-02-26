@@ -109,25 +109,20 @@ impl druid::Widget<AppWidgetData> for AppWidget {
             self.root().update_focus(new_focus_widget);
         }
 
-        if self.root().needs_update() {
-            loop {
-                let needs_update = self.root().needs_update();
+        let mut needs_update = self.root().needs_update();
+        while needs_update {
+            needs_update = self.root().needs_update();
 
-                let ext_handle = ctx.get_external_handle();
-                let mut context_state = ContextState {
-                    ext_handle: &ext_handle,
-                    window_id: ctx.window_id(),
-                    window: &ctx.window().clone(),
-                    text: ctx.text().clone(),
-                    focus_widget,
-                };
-                let mut cx = Ui::new(&mut self.root, &mut context_state, &mut self.child_counter);
-                (self.app)(&mut cx);
-
-                if !(needs_update) {
-                    break;
-                }
-            }
+            let ext_handle = ctx.get_external_handle();
+            let mut context_state = ContextState {
+                ext_handle: &ext_handle,
+                window_id: ctx.window_id(),
+                window: &ctx.window().clone(),
+                text: ctx.text().clone(),
+                focus_widget,
+            };
+            let mut cx = Ui::new(&mut self.root, &mut context_state, &mut self.child_counter);
+            (self.app)(&mut cx);
         }
     }
 
@@ -141,6 +136,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
         if matches!(event, druid::LifeCycle::WidgetAdded) {
             let ext_handle = ctx.get_external_handle();
             self.ext_event_sink = Some(ext_handle.clone());
+
             let mut context_state = ContextState {
                 ext_handle: &ext_handle,
                 window_id: ctx.window_id(),
