@@ -1,7 +1,7 @@
 use crate::{
     bloom::Bloom,
     context::{ContextState, EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx},
-    event::{Event, LifeCycle},
+    event::{Event, LifeCycle, InternalEvent},
     id::ChildId,
     key::Caller,
     kurbo::{Affine, Insets, Point, Rect, Shape, Size, Vec2},
@@ -9,7 +9,7 @@ use crate::{
     piet::RenderContext,
     BoxConstraints,
 };
-use druid::{Cursor, InternalEvent, Region, TimerToken};
+use druid::{Cursor, Region, TimerToken};
 use std::{
     any::Any,
     collections::HashMap,
@@ -295,6 +295,9 @@ impl Child {
             Event::Timer(_) => false, // This event was targeted only to our parent
             Event::Command(_) => true,
             Event::Notification(_) => false,
+
+            Event::WindowCloseRequested => true,
+            Event::WindowDisconnected => true,
         };
 
         if recurse {

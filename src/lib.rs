@@ -1,8 +1,10 @@
 #![allow(clippy::clippy::new_without_default)]
 
-pub use druid::{kurbo, piet};
+extern crate druid_shell as shell;
 
-pub mod app;
+pub use shell::{kurbo, piet};
+
+// Coat originals
 pub mod context;
 pub mod id;
 pub mod key;
@@ -11,16 +13,16 @@ pub mod state;
 pub mod tree;
 pub mod ui;
 pub mod widgets;
+pub mod app;
 
+// Mostly from Druid
 pub mod bloom;
 pub mod text;
+pub mod event;
+pub mod mouse;
+pub mod box_constraints;
 
-pub mod event {
-    pub use druid::{Event, LifeCycle};
-    pub use druid::{MouseButton, MouseButtons, MouseEvent};
-}
-
-pub use druid::BoxConstraints;
+pub use box_constraints::BoxConstraints;
 
 pub trait VisualEq {
     /// Determine whether two values are the same.

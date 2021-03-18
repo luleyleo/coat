@@ -3,7 +3,7 @@ use crate::{
     text::{BasicTextInput, EditAction, Editor, LayoutMetrics, Selection, TextInput, TextLayout},
 };
 use druid::{
-    piet::PietText, Affine, Color, Cursor, HotKey, Insets, KbKey, LifeCycle, Point, SysMods,
+    piet::PietText, Affine, Color, Cursor, HotKey, Insets, KbKey, Point, SysMods,
     TextAlignment, TimerToken, Vec2,
 };
 use std::time::Duration;

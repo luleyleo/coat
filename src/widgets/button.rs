@@ -2,7 +2,8 @@ use std::panic::Location;
 
 use crate::{
     context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx},
-    event::{Event, LifeCycle, MouseButton},
+    event::{Event, LifeCycle},
+    mouse::MouseButton,
     kurbo::Size,
     object::{Properties, RenderObject, RenderObjectInterface},
     piet::RenderContext,

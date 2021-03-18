@@ -8,8 +8,11 @@ edition = "2018"
 
 [dependencies]
 druid = "0.7.0"
+druid-shell = "0.7.0"
 fnv = "1.0.7"
+instant = "0.1.9"
 log = "0.4.11"
 simple_logger = "1.11.0"
+tracing = "0.1.25"
 unicode-segmentation = "1.7.1"
 xi-unicode = "0.3.0"

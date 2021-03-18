@@ -19,9 +19,10 @@ use super::{
     Selection, TextLayout, TextStorage,
 };
 use crate::context::PaintCtx;
-use crate::kurbo::Line;
+use crate::kurbo::{Line, Point, Rect};
 use crate::piet::PietText;
-use druid::{Application, Env, MouseEvent, Point, Rect, UpdateCtx};
+use crate::mouse::MouseEvent;
+use druid::{Application, Env, UpdateCtx};
 
 /// A component for widgets that offer text editing.
 ///
