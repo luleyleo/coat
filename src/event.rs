@@ -14,9 +14,12 @@
 
 //! Events.
 
-use crate::kurbo::{Rect, Shape, Size, Vec2};
-use crate::shell::{Clipboard, KeyEvent, TimerToken};
 use crate::mouse::MouseEvent;
+use crate::shell::{Clipboard, KeyEvent, TimerToken};
+use crate::{
+    id::ChildId,
+    kurbo::{Rect, Shape, Size, Vec2},
+};
 
 use druid::{Command, Notification, WidgetId};
 /// An enum for specifying whether an event was handled.
@@ -226,7 +229,7 @@ pub enum InternalEvent {
     /// A command still in the process of being dispatched.
     TargetedCommand(Command),
     /// Used for routing timer events.
-    RouteTimer(TimerToken, WidgetId),
+    RouteTimer(TimerToken, ChildId),
 }
 
 /// Application life cycle events.
@@ -320,9 +323,9 @@ pub enum InternalLifeCycle {
     /// Used to route the `FocusChanged` event.
     RouteFocusChanged {
         /// the widget that is losing focus, if any
-        old: Option<WidgetId>,
+        old: Option<ChildId>,
         /// the widget that is gaining focus, if any
-        new: Option<WidgetId>,
+        new: Option<ChildId>,
     },
     /// The parents widget origin in window coordinate space has changed.
     ParentWindowOrigin,

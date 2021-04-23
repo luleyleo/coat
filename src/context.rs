@@ -1,10 +1,11 @@
 use crate::{
-    id::ChildId,
+    ext_event::{ExtEventHost, ExtEventSink},
+    id::{ChildId, ExtHandleId, WindowId},
     kurbo::{Affine, Insets, Point, Rect, Size},
     piet::{Piet, PietText, RenderContext},
+    shell::{Cursor, Region, TimerToken, WindowHandle},
     tree::{ChildState, CursorChange, FocusChange},
 };
-use druid::{Cursor, ExtEventSink, Region, TimerToken, WindowHandle, WindowId};
 use std::{
     ops::{Deref, DerefMut},
     time::Duration,
@@ -26,7 +27,7 @@ macro_rules! impl_context_method {
 
 /// Static state that is shared between most contexts.
 pub(crate) struct ContextState<'a> {
-    pub(crate) ext_handle: &'a ExtEventSink,
+    pub(crate) ext_host: &'a ExtEventHost,
     pub(crate) window_id: WindowId,
     pub(crate) window: &'a WindowHandle,
     pub(crate) text: PietText,
@@ -377,8 +378,8 @@ impl_context_method!(
         /// and can be used to submit commands back to the application.
         ///
         /// [`ExtEventSink`]: struct.ExtEventSink.html
-        pub fn get_external_handle(&self) -> ExtEventSink {
-            self.state.ext_handle.clone()
+        pub fn get_external_handle(&self, handler_id: ExtHandleId) -> ExtEventSink {
+            self.state.ext_host.make_sink(handler_id)
         }
 
         /// Request a timer event.

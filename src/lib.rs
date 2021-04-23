@@ -5,6 +5,7 @@ extern crate druid_shell as shell;
 pub use shell::{kurbo, piet};
 
 // Coat originals
+pub mod app;
 pub mod context;
 pub mod id;
 pub mod key;
@@ -13,14 +14,14 @@ pub mod state;
 pub mod tree;
 pub mod ui;
 pub mod widgets;
-pub mod app;
 
 // Mostly from Druid
 pub mod bloom;
-pub mod text;
-pub mod event;
-pub mod mouse;
 pub mod box_constraints;
+pub mod event;
+pub mod ext_event;
+pub mod mouse;
+pub mod text;
 
 pub use box_constraints::BoxConstraints;
 

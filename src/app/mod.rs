@@ -1,69 +1,43 @@
 #![allow(dead_code, unused_variables)]
 
 use crate::{
-    event::Event,
-    id::{ChildCounter, WindowId},
-    piet::Piet,
-    shell::{self, Region},
-    tree::Children,
+    app::win_handler::CoatWinHandler,
+    id::WindowId,
+    shell::{self},
     ui::Ui,
 };
-use std::{cell::RefCell, rc::Rc};
 
-mod application;
-mod win_handler;
+mod handle;
+pub(crate) mod win_handler;
 mod window;
 
-#[derive(Clone)]
-pub(crate) struct AppHandle {
-    inner: Rc<RefCell<AppHandleInner>>,
+use handle::*;
+
+pub struct App {
+    title: String,
 }
 
-struct AppHandleInner {
-    app: Box<dyn FnMut(&mut Ui)>,
-    shell_app: shell::Application,
-    child_counter: ChildCounter,
-    children: Children,
-}
-
-impl AppHandle {
-    pub fn initialize(&self) {
-        todo!()
+impl App {
+    pub fn new(title: impl Into<String>) -> Self {
+        App {
+            title: title.into(),
+        }
     }
 
-    pub fn connect(&self, window: WindowId, handle: &shell::WindowHandle) {
-        todo!()
+    pub fn run(self, app: impl FnMut(&mut Ui) + 'static) -> Result<(), shell::Error> {
+        let application = shell::Application::new()?;
+
+        let handle = AppHandle::new(app, application.clone());
+
+        handle.initialize();
+
+        let mut builder = shell::WindowBuilder::new(application.clone());
+        builder.set_handler(Box::new(CoatWinHandler::new(handle, WindowId::illigal())));
+        builder.set_title(self.title);
+        builder.build()?;
+
+        application.run(None);
+
+        Ok(())
     }
-
-    pub fn prepare_paint(&self, window: WindowId) {
-        todo!()
-    }
-
-    pub fn paint(&self, window: WindowId, piet: &mut Piet, invalid: &Region) {
-        todo!()
-    }
-
-    pub fn event(&self, window: WindowId, event: Event) {
-        todo!()
-    }
-}
-
-pub fn run(app: impl FnMut(&mut Ui) + 'static) -> Result<(), shell::Error> {
-    let application = shell::Application::new()?;
-
-    let inner_handle = AppHandleInner {
-        app: Box::new(app),
-        shell_app: application.clone(),
-        child_counter: ChildCounter::new(),
-        children: Children::new(),
-    };
-    let handle = AppHandle {
-        inner: Rc::new(RefCell::new(inner_handle)),
-    };
-
-    handle.initialize();
-
-    application.run(None);
-
-    Ok(())
 }

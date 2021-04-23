@@ -1,7 +1,7 @@
 use crate::{
     bloom::Bloom,
     context::{ContextState, EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx},
-    event::{Event, LifeCycle, InternalEvent},
+    event::{Event, InternalEvent, LifeCycle},
     id::ChildId,
     key::Caller,
     kurbo::{Affine, Insets, Point, Rect, Shape, Size, Vec2},

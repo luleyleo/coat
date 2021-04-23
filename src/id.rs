@@ -18,3 +18,12 @@ pub struct ChildId(usize);
 
 #[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
 pub struct WindowId(usize);
+
+#[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+pub struct ExtHandleId(usize);
+
+impl WindowId {
+    pub(crate) fn illigal() -> Self {
+        WindowId(0)
+    }
+}
