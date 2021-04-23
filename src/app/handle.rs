@@ -60,7 +60,8 @@ impl AppHandleInner {
 
         let bc = BoxConstraints::tight(self.size);
 
-        root.object.layout(&mut layout_ctx, &bc, &mut root.children);
+        let root_size = root.object.layout(&mut layout_ctx, &bc, &mut root.children);
+        root.state.size = root_size;
     }
 }
 
@@ -83,6 +84,7 @@ impl AppHandleInner {
             &mut self.child_counter,
         );
         (self.app)(&mut ui);
+        self.layout();
 
         handle.show();
     }
@@ -182,8 +184,6 @@ impl AppHandleInner {
             self.handle.as_mut().unwrap().set_cursor(&Cursor::Arrow);
         }
 
-        self.post_event_processing(&mut child_state, false);
-
         let mut needs_update = self.root().needs_update();
         while needs_update {
             needs_update = self.root().needs_update();
@@ -202,6 +202,8 @@ impl AppHandleInner {
             );
             (self.app)(&mut cx);
         }
+
+        self.post_event_processing(&mut child_state, false);
 
         is_handled
     }
@@ -229,6 +231,20 @@ impl AppHandleInner {
             self.handle.as_ref().unwrap().request_anim_frame();
         }
         self.invalid.union_with(&widget_state.invalid);
+
+        if widget_state.needs_layout {
+            self.layout();
+            self.invalid.add_rect(self.size.to_rect());
+            widget_state.needs_layout = false;
+        }
+
+        if !self.invalid.is_empty() {
+            self.handle
+                .as_ref()
+                .unwrap()
+                .invalidate_rect(self.invalid.bounding_box())
+        }
+        self.invalid.clear();
 
         // If there are any commands and they should be processed
         if process_commands {
@@ -279,11 +295,7 @@ impl AppHandle {
         self.inner.borrow_mut().paint(piet, invalid)
     }
 
-    pub fn event(&self, event: Event) -> Handled {
-        self.inner.borrow_mut().event(event)
-    }
-
     pub fn do_window_event(&mut self, event: Event, window_id: WindowId) -> Handled {
-        Handled::Yes
+        self.inner.borrow_mut().event(event)
     }
 }
