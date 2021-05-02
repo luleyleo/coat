@@ -11,7 +11,7 @@ use crate::{
     ui::Ui,
     BoxConstraints,
 };
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use std::{cell::RefCell, rc::Rc};
 
 #[derive(Clone)]
 pub(crate) struct AppHandle {
@@ -132,6 +132,7 @@ impl AppHandleInner {
 
     pub fn event(&mut self, event: Event) -> Handled {
         match &event {
+            Event::WindowCloseRequested => self.handle().close(),
             Event::WindowSize(size) => self.size = *size,
             Event::MouseDown(e) | Event::MouseUp(e) | Event::MouseMove(e) | Event::Wheel(e) => {
                 self.last_mouse_pos = Some(e.pos)

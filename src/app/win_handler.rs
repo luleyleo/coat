@@ -8,7 +8,7 @@ use crate::{
     id::WindowId,
     kurbo::Size,
     piet::Piet,
-    shell::{self, KeyEvent, Region, TimerToken},
+    shell::{self, Application, KeyEvent, Region, TimerToken},
 };
 
 pub(crate) const RUN_COMMANDS_TOKEN: IdleToken = IdleToken::new(1);
@@ -100,5 +100,14 @@ impl shell::WinHandler for CoatWinHandler {
     fn timer(&mut self, token: TimerToken) {
         self.app_state
             .do_window_event(Event::Timer(token), self.window_id);
+    }
+
+    fn request_close(&mut self) {
+        self.app_state
+            .do_window_event(Event::WindowCloseRequested, self.window_id);
+    }
+
+    fn destroy(&mut self) {
+        Application::global().quit()
     }
 }
