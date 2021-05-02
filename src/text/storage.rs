@@ -14,13 +14,12 @@
 
 //! Storing text.
 
+use crate::env::Env;
+use crate::piet::{PietTextLayoutBuilder, TextStorage as PietTextStorage};
 use std::sync::Arc;
 
-use crate::piet::{PietTextLayoutBuilder, TextStorage as PietTextStorage};
-use druid::{Data, Env};
-
 /// A type that represents text that can be displayed.
-pub trait TextStorage: PietTextStorage + Data {
+pub trait TextStorage: PietTextStorage + Clone {
     /// If this TextStorage object manages style spans, it should implement
     /// this method and update the provided builder with its spans, as required.
     #[allow(unused_variables)]

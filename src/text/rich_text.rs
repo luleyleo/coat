@@ -18,14 +18,15 @@ use std::ops::{Range, RangeBounds};
 use std::sync::Arc;
 
 use super::{Attribute, AttributeSpans, TextStorage};
+use crate::env::{Env, KeyOrValue};
 use crate::piet::{
     util, Color, FontFamily, FontStyle, FontWeight, PietTextLayoutBuilder, TextLayoutBuilder,
     TextStorage as PietTextStorage,
 };
-use druid::{ArcStr, Data, Env, FontDescriptor, KeyOrValue};
+use crate::text::{ArcStr, FontDescriptor};
 
 /// Text with optional style spans.
-#[derive(Debug, Clone, Data)]
+#[derive(Debug, Clone)]
 pub struct RichText {
     buffer: ArcStr,
     attrs: Arc<AttributeSpans>,

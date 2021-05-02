@@ -18,6 +18,7 @@ pub mod widgets;
 // Mostly from Druid
 pub mod bloom;
 pub mod box_constraints;
+pub mod env;
 pub mod event;
 pub mod ext_event;
 pub mod mouse;

@@ -346,7 +346,7 @@ impl TextBoxObject {
     /// This should be rarely needed; the main use-case would be if you need
     /// to manually set the text and then immediately do hit-testing or other
     /// tasks that rely on having an up-to-date text layout.
-    pub fn force_rebuild(&mut self, text: String, factory: &mut PietText, env: &druid::Env) {
+    pub fn force_rebuild(&mut self, text: String, factory: &mut PietText, env: &crate::env::Env) {
         self.editor.set_text(text);
         self.editor.rebuild_if_needed(factory, env);
     }
@@ -354,7 +354,7 @@ impl TextBoxObject {
     #[allow(dead_code)]
     // TODO: Figure out what this was good for.
     /// Calculate a stateful scroll offset
-    fn update_hscroll(&mut self, self_width: f64, _env: &druid::Env) {
+    fn update_hscroll(&mut self, self_width: f64, _env: &crate::env::Env) {
         let cursor_x = self.editor.cursor_line().p0.x;
         // if the text ends in trailing whitespace, that space is not included
         // in its reported width, but we need to include it for these calculations.

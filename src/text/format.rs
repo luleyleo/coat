@@ -14,11 +14,9 @@
 
 //! Creating, interpreting, and validating textual representations of values.
 
+use super::Selection;
 use std::str::FromStr;
 use std::sync::Arc;
-
-use super::Selection;
-use druid::Data;
 
 /// A trait for types that create, interpret, and validate textual representations
 /// of values.
@@ -98,7 +96,7 @@ pub struct Validation {
 // it may grow to contain information such as invalid spans?
 // TODO: the fact that this uses `Arc` to work with `Data` is a bit inefficient;
 // it means that we will update when a new instance of an identical error occurs.
-#[derive(Debug, Clone, Data)]
+#[derive(Debug, Clone)]
 pub struct ValidationError {
     inner: Arc<dyn std::error::Error>,
 }

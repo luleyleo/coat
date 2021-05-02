@@ -18,11 +18,12 @@ use super::{
     movement, offset_for_delete_backwards, EditAction, EditableText, MouseAction, Movement,
     Selection, TextLayout, TextStorage,
 };
-use crate::context::PaintCtx;
+use crate::context::{PaintCtx, UpdateCtx};
+use crate::env::Env;
 use crate::kurbo::{Line, Point, Rect};
-use crate::piet::PietText;
 use crate::mouse::MouseEvent;
-use druid::{Application, Env, UpdateCtx};
+use crate::piet::PietText;
+use crate::shell::Application;
 
 /// A component for widgets that offer text editing.
 ///

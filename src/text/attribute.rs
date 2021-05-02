@@ -16,8 +16,9 @@
 
 use std::ops::Range;
 
+use crate::env::{Env, KeyOrValue};
 use crate::piet::{Color, FontFamily, FontStyle, FontWeight, TextAttribute as PietAttr};
-use druid::{Env, FontDescriptor, KeyOrValue};
+use crate::text::FontDescriptor;
 
 /// A collection of spans of attributes of various kinds.
 #[derive(Debug, Clone, Default)]

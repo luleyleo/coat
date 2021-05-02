@@ -27,7 +27,7 @@ struct AppHandleInner {
     children: Children,
     last_mouse_pos: Option<Point>,
     focus_widget: Option<ChildId>,
-    env: druid::Env,
+    env: crate::env::Env,
     invalid: Region,
     size: Size,
 }
@@ -271,7 +271,7 @@ impl AppHandle {
             children: Children::new(),
             last_mouse_pos: None,
             focus_widget: None,
-            env: druid::Env::default(),
+            env: crate::env::Env::default(),
             invalid: Region::EMPTY,
             size: Size::ZERO,
         };

@@ -18,13 +18,14 @@ use std::ops::Range;
 
 use super::TextStorage;
 use crate::context::PaintCtx;
+use crate::context::UpdateCtx;
+use crate::env::{Env, KeyOrValue};
 use crate::kurbo::{Line, Point, Rect, Size};
 use crate::piet::{
-    Color, PietText, PietTextLayout, Text as _, TextAlignment, TextAttribute, TextLayout as _,
-    TextLayoutBuilder as _,
+    Color, PietText, PietTextLayout, RenderContext, Text as _, TextAlignment, TextAttribute,
+    TextLayout as _, TextLayoutBuilder as _,
 };
 use crate::text::FontDescriptor;
-use druid::{Env, KeyOrValue, RenderContext, UpdateCtx};
 
 /// A component for displaying text on screen.
 ///
@@ -78,8 +79,8 @@ impl<T> TextLayout<T> {
     pub fn new() -> Self {
         TextLayout {
             text: None,
-            font: druid::theme::UI_FONT.into(),
-            text_color: druid::theme::LABEL_COLOR.into(),
+            font: FontDescriptor::default().into(),
+            text_color: Color::WHITE.into(),
             text_size_override: None,
             layout: None,
             wrap_width: f64::INFINITY,
@@ -288,19 +289,7 @@ impl<T: TextStorage> TextLayout<T> {
     ///
     /// Returns `true` if the text item needs to be rebuilt.
     pub fn needs_rebuild_after_update(&mut self, ctx: &mut UpdateCtx) -> bool {
-        if ctx.env_changed() && self.layout.is_some() {
-            let rebuild = ctx.env_key_changed(&self.font)
-                || ctx.env_key_changed(&self.text_color)
-                || self
-                    .text_size_override
-                    .as_ref()
-                    .map(|k| ctx.env_key_changed(k))
-                    .unwrap_or(false);
-
-            if rebuild {
-                self.layout = None;
-            }
-        }
+        // TODO
         self.layout.is_none()
     }
 

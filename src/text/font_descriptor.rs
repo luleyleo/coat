@@ -14,13 +14,13 @@
 
 //! Font attributes
 
-use druid::{Data, FontFamily, FontStyle, FontWeight};
+use crate::piet::{FontFamily, FontStyle, FontWeight};
 
 /// A collection of attributes that describe a font.
 ///
 /// This is provided as a convenience; library consumers may wish to have
 /// a single type that represents a specific font face at a specific size.
-#[derive(Debug, Data, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct FontDescriptor {
     /// The font's [`FontFamily`](struct.FontFamily.html).
     pub family: FontFamily,

@@ -58,7 +58,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
         ctx: &mut druid::EventCtx,
         event: &druid::Event,
         _data: &mut AppWidgetData,
-        _env: &druid::Env,
+        _env: &crate::env::Env,
     ) {
         ctx.set_active(true);
         ctx.request_focus();
@@ -131,7 +131,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
         ctx: &mut druid::LifeCycleCtx,
         event: &druid::LifeCycle,
         _data: &AppWidgetData,
-        _env: &druid::Env,
+        _env: &crate::env::Env,
     ) {
         if matches!(event, druid::LifeCycle::WidgetAdded) {
             let ext_handle = ctx.get_external_handle();
@@ -157,7 +157,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
         _ctx: &mut druid::UpdateCtx,
         _old_data: &AppWidgetData,
         _data: &AppWidgetData,
-        _env: &druid::Env,
+        _env: &crate::env::Env,
     ) {
         // Nothing to do
     }
@@ -167,7 +167,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
         ctx: &mut druid::LayoutCtx,
         bc: &druid::BoxConstraints,
         _data: &AppWidgetData,
-        env: &druid::Env,
+        env: &crate::env::Env,
     ) -> druid::Size {
         let ext_handle = ctx.get_external_handle();
         let mouse_pos = self.mouse_pos;
@@ -192,7 +192,7 @@ impl druid::Widget<AppWidgetData> for AppWidget {
         root.state.size
     }
 
-    fn paint(&mut self, ctx: &mut druid::PaintCtx, _data: &AppWidgetData, env: &druid::Env) {
+    fn paint(&mut self, ctx: &mut druid::PaintCtx, _data: &AppWidgetData, env: &crate::env::Env) {
         let ext_handle = self.ext_event_sink.clone().unwrap();
 
         let mut context_state = ContextState {
