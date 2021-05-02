@@ -1,10 +1,9 @@
 use crate::{
+    kurbo::{Affine, Insets, Point, Size, Vec2},
     object::prelude::*,
+    piet::{Color, PietText, RenderContext, TextAlignment},
+    shell::{Cursor, HotKey, KbKey, SysMods, TimerToken},
     text::{BasicTextInput, EditAction, Editor, LayoutMetrics, Selection, TextInput, TextLayout},
-};
-use druid::{
-    piet::PietText, Affine, Color, Cursor, HotKey, Insets, KbKey, Point, SysMods, TextAlignment,
-    TimerToken, Vec2,
 };
 use std::time::Duration;
 

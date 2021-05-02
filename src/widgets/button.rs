@@ -3,8 +3,8 @@ use std::panic::Location;
 use crate::{
     context::{EventCtx, LayoutCtx, LifeCycleCtx, PaintCtx, UpdateCtx},
     event::{Event, LifeCycle},
+    kurbo::{Point, Size},
     mouse::MouseButton,
-    kurbo::Size,
     object::{Properties, RenderObject, RenderObjectInterface},
     piet::RenderContext,
     tree::Children,
@@ -12,7 +12,6 @@ use crate::{
     widgets::label::Label,
     BoxConstraints,
 };
-use druid::Point;
 
 pub use style::{Style, StyleSheet};
 

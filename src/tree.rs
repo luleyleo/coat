@@ -7,9 +7,9 @@ use crate::{
     kurbo::{Affine, Insets, Point, Rect, Shape, Size, Vec2},
     object::AnyRenderObject,
     piet::RenderContext,
+    shell::{Cursor, Region, TimerToken},
     BoxConstraints,
 };
-use druid::{Cursor, Region, TimerToken};
 use std::{
     any::Any,
     collections::HashMap,
@@ -204,7 +204,6 @@ impl Child {
                     );
                     had_active || hot_changed
                 }
-                InternalEvent::TargetedCommand(_cmd) => false,
                 InternalEvent::RouteTimer(_token, _widget_id) => false,
             },
             Event::WindowConnected => true,
@@ -293,8 +292,6 @@ impl Child {
             Event::Paste(_) => self.state.has_focus,
             Event::Zoom(_) => had_active || self.state.is_hot,
             Event::Timer(_) => false, // This event was targeted only to our parent
-            Event::Command(_) => true,
-            Event::Notification(_) => false,
 
             Event::WindowCloseRequested => true,
             Event::WindowDisconnected => true,

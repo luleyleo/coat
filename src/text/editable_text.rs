@@ -371,7 +371,6 @@ pub fn len_utf8_from_first_byte(b: u8) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use druid::Data;
 
     #[test]
     fn replace() {
@@ -524,13 +523,5 @@ mod tests {
         assert_eq!(b.len(), b.next_line_break(11));
         assert_eq!(b.len(), b.next_line_break(13));
         assert_eq!(b.len(), b.next_line_break(19));
-    }
-
-    #[test]
-    fn arcstring_empty_edit() {
-        let a = Arc::new("hello".to_owned());
-        let mut b = a.clone();
-        b.edit(5..5, "");
-        assert!(a.same(&b));
     }
 }
