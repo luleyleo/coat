@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use crate::{
     app::App,
     constraints::Constraints,
@@ -9,7 +11,12 @@ use crate::{
 };
 
 pub struct ButtonElement {
-    color: Color,
+    pub color: Color,
+}
+impl ButtonElement {
+    pub fn new(color: Color) -> Self {
+        ButtonElement { color }
+    }
 }
 impl Element for ButtonElement {
     fn paint(&mut self, piet: &mut Piet, size: Size) {
@@ -22,12 +29,12 @@ impl Element for ButtonElement {
 }
 
 #[track_caller]
-fn button(ui: &mut Ui, color: Color) {
+pub fn button(ui: &mut Ui, color: Color) {
     let location = std::panic::Location::caller();
     ui.add(location, ButtonElement { color }, |_| {});
 }
 
-fn demo_app(ui: &mut Ui) {
+pub fn demo_app(ui: &mut Ui) {
     button(ui, Color::RED);
 }
 

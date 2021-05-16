@@ -8,10 +8,19 @@ use std::any::{Any, TypeId};
 
 pub type Location = &'static std::panic::Location<'static>;
 
-pub trait Element: Any {
+pub trait Element: AsAny {
     fn paint(&mut self, piet: &mut Piet, size: Size);
 
     fn layout(&self, constraints: &Constraints) -> Size;
+}
+
+pub trait AsAny {
+    fn as_any(&self) -> &dyn Any;
+}
+impl<T: Any> AsAny for T {
+    fn as_any(&self) -> &dyn Any {
+        &*self
+    }
 }
 
 #[derive(PartialEq, Eq)]
@@ -24,6 +33,7 @@ pub enum Entry {
     Begin(Node),
     End,
 }
+
 impl Entry {
     pub fn as_mut_node(&mut self) -> &mut Node {
         match self {
@@ -39,6 +49,7 @@ pub struct Node {
     pub position: Point,
     pub size: Size,
 }
+
 impl Node {
     pub fn new(key: Key, element: Box<dyn Element>) -> Self {
         Node {
@@ -52,8 +63,9 @@ impl Node {
 
 #[derive(Default)]
 pub struct Tree {
-    pub content: Vec<Entry>,
+    pub(crate) content: Vec<Entry>,
 }
+
 impl Tree {
     pub fn layout(&mut self, window_size: Size) {
         let constraints = Constraints {

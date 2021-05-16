@@ -5,6 +5,7 @@ pub struct TreeMutation<'a> {
     tree: &'a mut Tree,
     index: usize,
 }
+
 impl<'a> TreeMutation<'a> {
     pub fn new(tree: &'a mut Tree) -> Self {
         TreeMutation { tree, index: 0 }
@@ -33,12 +34,16 @@ impl<'a> TreeMutation<'a> {
     }
 
     pub fn end_existing(&mut self) {
+        let mut depth = 0;
         for i in self.index..self.tree.content.len() {
-            if matches!(self.tree.content[i], Entry::End) {
-                self.tree.content.splice(self.index..i, iter::empty());
-                self.index -= (self.index..i).len();
-                self.index += 1;
-                return;
+            match self.tree.content[i] {
+                Entry::Begin(_) => depth += 1,
+                Entry::End if depth > 0 => depth -= 1,
+                Entry::End => {
+                    self.tree.content.splice(self.index..i, iter::empty());
+                    self.index += 1;
+                    return;
+                }
             }
         }
         unreachable!("end_existing called but there was no end");
@@ -72,5 +77,194 @@ impl<'a> TreeMutation<'a> {
             }
         }
         None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn single_insert() {
+        let mut tree = Tree::default();
+        assert_eq!(tree.content.len(), 0);
+
+        let mut mutation = TreeMutation::new(&mut tree);
+
+        let loc1 = std::panic::Location::caller();
+        let elm1 = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::RED));
+
+        mutation.insert(loc1, elm1);
+        mutation.end_new();
+
+        let mut iter = tree.content.iter();
+        assert!(matches!(iter.next(), Some(&Entry::Begin(_))));
+        assert!(matches!(iter.next(), Some(&Entry::End)));
+        assert!(iter.next().is_none());
+    }
+
+    #[test]
+    fn double_insert() {
+        let mut tree = Tree::default();
+        assert_eq!(tree.content.len(), 0);
+
+        let mut mutation = TreeMutation::new(&mut tree);
+
+        let loc1 = std::panic::Location::caller();
+        let elm1 = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::RED));
+        let loc2 = std::panic::Location::caller();
+        let elm2 = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::BLUE));
+
+        mutation.insert(loc1, elm1);
+        mutation.end_new();
+        mutation.insert(loc2, elm2);
+        mutation.end_new();
+
+        let mut iter = tree.content.iter();
+        assert!(matches!(iter.next(), Some(&Entry::Begin(_))));
+        assert!(matches!(iter.next(), Some(&Entry::End)));
+        assert!(matches!(iter.next(), Some(&Entry::Begin(_))));
+        assert!(matches!(iter.next(), Some(&Entry::End)));
+        assert!(iter.next().is_none());
+
+        assert_eq!(
+            tree.content[2]
+                .as_mut_node()
+                .element
+                .as_any()
+                .downcast_ref::<crate::demo::ButtonElement>()
+                .unwrap()
+                .color,
+            crate::piet::Color::BLUE
+        )
+    }
+
+    #[test]
+    fn insert_single_child() {
+        let mut tree = Tree::default();
+        assert_eq!(tree.content.len(), 0);
+
+        let mut mutation = TreeMutation::new(&mut tree);
+
+        let loc1 = std::panic::Location::caller();
+        let elm1 = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::RED));
+
+        let loc2 = std::panic::Location::caller();
+        let elm2 = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::BLUE));
+
+        mutation.insert(loc1, elm1);
+        mutation.insert(loc2, elm2);
+        mutation.end_new();
+        mutation.end_new();
+
+        let mut iter = tree.content.iter();
+        assert!(matches!(iter.next(), Some(&Entry::Begin(_))));
+        assert!(matches!(iter.next(), Some(&Entry::Begin(_))));
+        assert!(matches!(iter.next(), Some(&Entry::End)));
+        assert!(matches!(iter.next(), Some(&Entry::End)));
+        assert!(iter.next().is_none());
+
+        assert_eq!(
+            tree.content[1]
+                .as_mut_node()
+                .element
+                .as_any()
+                .downcast_ref::<crate::demo::ButtonElement>()
+                .unwrap()
+                .color,
+            crate::piet::Color::BLUE
+        )
+    }
+
+    #[test]
+    fn update_single_child() {
+        let mut tree = Tree::default();
+        assert_eq!(tree.content.len(), 0);
+
+        let loc1 = std::panic::Location::caller();
+        let elm1 = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::RED));
+
+        let loc2 = std::panic::Location::caller();
+        let elm2 = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::BLUE));
+        let elm2x = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::GREEN));
+
+        {
+            let mut mutation = TreeMutation::new(&mut tree);
+            mutation.insert(loc1, elm1);
+            mutation.insert(loc2, elm2);
+            mutation.end_new();
+            mutation.end_new();
+        }
+        assert_eq!(tree.content.len(), 4);
+        {
+            let mut mutation = TreeMutation::new(&mut tree);
+            assert!(mutation.next(loc1).is_some());
+            let n2 = mutation.next(loc2);
+            assert!(n2.is_some());
+            let n2 = n2.unwrap();
+            n2.element = elm2x;
+            mutation.end_existing();
+            mutation.end_existing();
+        }
+
+        let mut iter = tree.content.iter();
+        assert!(matches!(iter.next(), Some(&Entry::Begin(_))));
+        assert!(matches!(iter.next(), Some(&Entry::Begin(_))));
+        assert!(matches!(iter.next(), Some(&Entry::End)));
+        assert!(matches!(iter.next(), Some(&Entry::End)));
+        assert!(iter.next().is_none());
+
+        assert_eq!(
+            tree.content[1]
+                .as_mut_node()
+                .element
+                .as_any()
+                .downcast_ref::<crate::demo::ButtonElement>()
+                .unwrap()
+                .color,
+            crate::piet::Color::GREEN
+        )
+    }
+
+    #[test]
+    fn remove_single_child() {
+        let mut tree = Tree::default();
+        assert_eq!(tree.content.len(), 0);
+
+        let loc1 = std::panic::Location::caller();
+        let elm1 = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::RED));
+
+        let loc2 = std::panic::Location::caller();
+        let elm2 = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::BLUE));
+
+        {
+            let mut mutation = TreeMutation::new(&mut tree);
+            mutation.insert(loc1, elm1);
+            mutation.insert(loc2, elm2);
+            mutation.end_new();
+            mutation.end_new();
+        }
+        assert_eq!(tree.content.len(), 4);
+        {
+            let mut mutation = TreeMutation::new(&mut tree);
+            assert!(mutation.next(loc1).is_some());
+            mutation.end_existing();
+        }
+
+        let mut iter = tree.content.iter();
+        assert!(matches!(iter.next(), Some(&Entry::Begin(_))));
+        assert!(matches!(iter.next(), Some(&Entry::End)));
+        assert!(iter.next().is_none());
+
+        assert_eq!(
+            tree.content[0]
+                .as_mut_node()
+                .element
+                .as_any()
+                .downcast_ref::<crate::demo::ButtonElement>()
+                .unwrap()
+                .color,
+            crate::piet::Color::RED
+        )
     }
 }
