@@ -83,6 +83,7 @@ impl<'a> TreeMutation<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{elements::button, piet::Color};
 
     #[test]
     fn single_insert() {
@@ -92,7 +93,7 @@ mod tests {
         let mut mutation = TreeMutation::new(&mut tree);
 
         let loc1 = std::panic::Location::caller();
-        let elm1 = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::RED));
+        let elm1 = Box::new(button::ButtonElement::new(Color::RED));
 
         mutation.insert(loc1, elm1);
         mutation.end_new();
@@ -111,9 +112,9 @@ mod tests {
         let mut mutation = TreeMutation::new(&mut tree);
 
         let loc1 = std::panic::Location::caller();
-        let elm1 = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::RED));
+        let elm1 = Box::new(button::ButtonElement::new(Color::RED));
         let loc2 = std::panic::Location::caller();
-        let elm2 = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::BLUE));
+        let elm2 = Box::new(button::ButtonElement::new(Color::BLUE));
 
         mutation.insert(loc1, elm1);
         mutation.end_new();
@@ -132,7 +133,7 @@ mod tests {
                 .as_mut_node()
                 .element
                 .as_any()
-                .downcast_ref::<crate::demo::ButtonElement>()
+                .downcast_ref::<button::ButtonElement>()
                 .unwrap()
                 .color,
             crate::piet::Color::BLUE
@@ -147,10 +148,10 @@ mod tests {
         let mut mutation = TreeMutation::new(&mut tree);
 
         let loc1 = std::panic::Location::caller();
-        let elm1 = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::RED));
+        let elm1 = Box::new(button::ButtonElement::new(Color::RED));
 
         let loc2 = std::panic::Location::caller();
-        let elm2 = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::BLUE));
+        let elm2 = Box::new(button::ButtonElement::new(Color::BLUE));
 
         mutation.insert(loc1, elm1);
         mutation.insert(loc2, elm2);
@@ -169,7 +170,7 @@ mod tests {
                 .as_mut_node()
                 .element
                 .as_any()
-                .downcast_ref::<crate::demo::ButtonElement>()
+                .downcast_ref::<button::ButtonElement>()
                 .unwrap()
                 .color,
             crate::piet::Color::BLUE
@@ -182,11 +183,11 @@ mod tests {
         assert_eq!(tree.content.len(), 0);
 
         let loc1 = std::panic::Location::caller();
-        let elm1 = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::RED));
+        let elm1 = Box::new(button::ButtonElement::new(Color::RED));
 
         let loc2 = std::panic::Location::caller();
-        let elm2 = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::BLUE));
-        let elm2x = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::GREEN));
+        let elm2 = Box::new(button::ButtonElement::new(Color::BLUE));
+        let elm2x = Box::new(button::ButtonElement::new(Color::GREEN));
 
         {
             let mut mutation = TreeMutation::new(&mut tree);
@@ -219,7 +220,7 @@ mod tests {
                 .as_mut_node()
                 .element
                 .as_any()
-                .downcast_ref::<crate::demo::ButtonElement>()
+                .downcast_ref::<button::ButtonElement>()
                 .unwrap()
                 .color,
             crate::piet::Color::GREEN
@@ -232,10 +233,10 @@ mod tests {
         assert_eq!(tree.content.len(), 0);
 
         let loc1 = std::panic::Location::caller();
-        let elm1 = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::RED));
+        let elm1 = Box::new(button::ButtonElement::new(Color::RED));
 
         let loc2 = std::panic::Location::caller();
-        let elm2 = Box::new(crate::demo::ButtonElement::new(crate::piet::Color::BLUE));
+        let elm2 = Box::new(button::ButtonElement::new(Color::BLUE));
 
         {
             let mut mutation = TreeMutation::new(&mut tree);
@@ -261,7 +262,7 @@ mod tests {
                 .as_mut_node()
                 .element
                 .as_any()
-                .downcast_ref::<crate::demo::ButtonElement>()
+                .downcast_ref::<button::ButtonElement>()
                 .unwrap()
                 .color,
             crate::piet::Color::RED

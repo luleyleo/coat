@@ -5,6 +5,7 @@ pub use druid_shell::piet;
 mod app;
 mod constraints;
 mod demo;
+mod elements;
 mod mutation;
 mod tree;
 mod ui;

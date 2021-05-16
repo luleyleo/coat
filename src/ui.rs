@@ -42,7 +42,7 @@ mod tests {
         let mut tree = Tree::default();
         let mut ui = Ui::new(&mut tree);
 
-        crate::demo::button(&mut ui, crate::piet::Color::RED);
+        crate::elements::button(&mut ui, crate::piet::Color::RED);
 
         let mut iter = tree.content.iter();
         assert!(matches!(iter.next(), Some(&Entry::Begin(_))));
