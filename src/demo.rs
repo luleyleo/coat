@@ -2,14 +2,17 @@
 
 use crate::{
     app::App,
-    elements::button,
+    elements::{button, column},
     piet::Color,
     shell::{Application, WindowBuilder},
     ui::Ui,
 };
 
 pub fn demo_app(ui: &mut Ui) {
-    button(ui, Color::RED);
+    column(ui, |ui| {
+        button(ui, Color::RED);
+        button(ui, Color::GREEN);
+    });
 }
 
 pub fn main() {

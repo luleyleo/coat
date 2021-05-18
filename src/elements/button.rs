@@ -2,7 +2,7 @@ use crate::{
     constraints::Constraints,
     kurbo::Size,
     piet::{Color, Piet, RenderContext},
-    tree::Element,
+    tree::{Content, Element},
     ui::Ui,
 };
 
@@ -18,11 +18,11 @@ impl ButtonElement {
 }
 
 impl Element for ButtonElement {
-    fn paint(&mut self, piet: &mut Piet, size: Size) {
+    fn paint(&mut self, piet: &mut Piet, size: Size, _content: &mut Content) {
         piet.fill(&size.to_rect(), &self.color);
     }
 
-    fn layout(&self, constraints: &Constraints) -> Size {
+    fn layout(&self, constraints: &Constraints, _: &mut Content) -> Size {
         constraints.max
     }
 }

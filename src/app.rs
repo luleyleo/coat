@@ -25,6 +25,7 @@ impl App {
     pub fn rebuild(&mut self) {
         let mut ui = Ui::new(&mut self.tree);
         (self.logic)(&mut ui);
+        self.tree.reconcile();
     }
 }
 
