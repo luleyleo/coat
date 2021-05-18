@@ -94,6 +94,10 @@ impl<'a> Content<'a> {
         self.children.len()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.children.is_empty()
+    }
+
     pub fn get(&self, index: usize) -> Option<&Node> {
         self.tree.get(self.children[index]).map(Entry::as_node)
     }
@@ -237,12 +241,12 @@ pub fn subtree_range(tree: &[Entry], index: usize) -> Range<usize> {
     assert!(matches!(tree[index], Entry::Begin(_)));
 
     let mut depth = 0;
-    for i in index..tree.len() {
-        match tree[i] {
+    for (i, e) in tree[index..].iter().enumerate() {
+        match e {
             Entry::Begin(_) => depth += 1,
             Entry::End if depth > 0 => depth -= 1,
             Entry::End => {
-                return (index + 1)..i;
+                return (index + 1)..(index + i);
             }
         }
     }
