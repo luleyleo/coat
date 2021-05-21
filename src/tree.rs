@@ -1,7 +1,7 @@
 use crate::{
     constraints::Constraints,
     kurbo::Size,
-    piet::{Color, Piet, RenderContext},
+    piet::{Color, Piet, PietText, RenderContext},
     shell::Region,
 };
 use std::{any::Any, ops::Range};
@@ -18,15 +18,24 @@ pub(crate) mod mutation;
 pub trait Element: AsAny {
     fn paint(&mut self, piet: &mut Piet, size: Size, content: &mut Content);
 
-    fn layout(&self, constraints: &Constraints, content: &mut Content) -> Size;
+    fn layout(
+        &mut self,
+        constraints: &Constraints,
+        content: &mut Content,
+        text: &mut PietText,
+    ) -> Size;
 }
 
 pub trait AsAny {
     fn as_any(&self) -> &dyn Any;
+    fn as_mut_any(&mut self) -> &mut dyn Any;
 }
 impl<T: Any> AsAny for T {
     fn as_any(&self) -> &dyn Any {
-        &*self
+        self
+    }
+    fn as_mut_any(&mut self) -> &mut dyn Any {
+        self
     }
 }
 
@@ -36,7 +45,7 @@ pub struct Tree {
 }
 
 impl Tree {
-    pub fn layout(&mut self, window_size: Size) {
+    pub fn layout(&mut self, text: &mut PietText, window_size: Size) {
         let constraints = Constraints {
             min: window_size,
             max: window_size,
@@ -45,7 +54,7 @@ impl Tree {
         let node = node.as_mut_node();
         let children = &node.children;
         let content = &mut Content { tree, children };
-        let size = node.element.layout(&constraints, content);
+        let size = node.element.layout(&constraints, content, text);
         node.size = size;
         assert_eq!(size, window_size);
     }

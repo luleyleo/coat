@@ -14,18 +14,20 @@ impl<'a> Ui<'a> {
         }
     }
 
-    pub fn add<E, C>(&mut self, location: Location, element: E, content: C)
+    pub fn add<E, U, C>(&mut self, location: Location, update: U, content: C)
     where
-        E: Element + 'static,
+        E: Element + Default + 'static,
+        U: FnOnce(&mut E),
         C: FnOnce(&mut Ui),
     {
-        let element = Box::new(element);
         if let Some(node) = self.mutation.next(location) {
-            node.element = element;
+            update(node.element.as_mut_any().downcast_mut::<E>().unwrap());
             content(self);
             self.mutation.end_existing();
         } else {
-            self.mutation.insert(location, element);
+            let mut element = E::default();
+            update(&mut element);
+            self.mutation.insert(location, Box::new(element));
             content(self);
             self.mutation.end_new();
         }
@@ -35,14 +37,14 @@ impl<'a> Ui<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tree::Entry;
+    use crate::{elements, tree::Entry};
 
     #[test]
     fn single_element() {
         let mut tree = Tree::default();
         let mut ui = Ui::new(&mut tree);
 
-        crate::elements::button(&mut ui, crate::piet::Color::RED);
+        elements::button(&mut ui, "test");
 
         let mut iter = tree.content.iter();
         assert!(matches!(iter.next(), Some(&Entry::Begin(_))));

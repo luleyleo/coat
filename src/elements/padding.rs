@@ -1,15 +1,17 @@
 use crate::{
     constraints::Constraints,
-    kurbo::{Point, Size},
+    kurbo::{Insets, Point, Size},
     piet::{Piet, PietText},
     tree::{Content, Element},
     ui::Ui,
 };
 
 #[derive(Default)]
-pub struct ColumnElement;
+pub struct Padding {
+    insets: Insets,
+}
 
-impl Element for ColumnElement {
+impl Element for Padding {
     fn paint(&mut self, piet: &mut Piet, _size: Size, content: &mut Content) {
         for mut child in content.iter_mut() {
             child.paint(piet);
@@ -22,18 +24,22 @@ impl Element for ColumnElement {
         content: &mut Content,
         text: &mut PietText,
     ) -> Size {
-        let height_per_child = constraints.max.height / content.len() as f64;
-        let child_constraints = constraints.with_max_height(height_per_child);
-        for (index, mut child) in content.iter_mut().enumerate() {
+        let child_constraints = constraints.shrink(self.insets.size());
+        let offset = Point::new(self.insets.x0, self.insets.y0);
+        for mut child in content.iter_mut() {
             child.layout(&child_constraints, text);
-            child.set_origin(Point::new(0.0, height_per_child * index as f64));
+            child.set_origin(offset);
         }
         constraints.max
     }
 }
 
 #[track_caller]
-pub fn column(ui: &mut Ui, content: impl FnOnce(&mut Ui)) {
+pub fn padding(ui: &mut Ui, insets: impl Into<Insets>, content: impl FnOnce(&mut Ui)) {
     let location = std::panic::Location::caller();
-    ui.add(location, |_: &mut ColumnElement| {}, content);
+    ui.add(
+        location,
+        |padding: &mut Padding| padding.insets = insets.into(),
+        content,
+    );
 }

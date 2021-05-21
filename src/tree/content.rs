@@ -1,10 +1,9 @@
 use crate::{
     constraints::Constraints,
-    kurbo::{Point, Size},
-    piet::{Piet, RenderContext},
+    kurbo::{Affine, Point, Size},
+    piet::{Piet, PietText, RenderContext},
     tree::{subtree_range, Entry, Node},
 };
-use shell::kurbo::Affine;
 use std::ops::{Index, IndexMut};
 
 pub struct Content<'a> {
@@ -22,11 +21,11 @@ impl<'a> MutTreeNode<'a> {
         self.node.position = origin;
     }
 
-    pub fn layout(&mut self, constraints: &Constraints) -> Size {
+    pub fn layout(&mut self, constraints: &Constraints, text: &mut PietText) -> Size {
         let MutTreeNode { node, tree } = self;
         let children = &node.children;
         let content = &mut Content { tree, children };
-        node.size = node.element.layout(constraints, content);
+        node.size = node.element.layout(constraints, content, text);
         node.size
     }
 

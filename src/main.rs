@@ -2,16 +2,15 @@
 
 use coat::{
     app::App,
-    elements::{button, column},
-    piet::Color,
+    elements::{button, column, padding},
     shell::{Application, WindowBuilder},
     ui::Ui,
 };
 
 pub fn demo_app(ui: &mut Ui) {
     column(ui, |ui| {
-        button(ui, Color::RED);
-        button(ui, Color::GREEN);
+        padding(ui, 10.0, |ui| button(ui, "Hello"));
+        padding(ui, 10.0, |ui| button(ui, "World"));
     });
 }
 

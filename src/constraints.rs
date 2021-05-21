@@ -24,4 +24,23 @@ impl Constraints {
             },
         }
     }
+
+    pub fn shrink(&self, size: Size) -> Self {
+        Self::clipped(&Constraints {
+            min: self.min - size,
+            max: self.max - size,
+        })
+    }
+
+    pub fn clipped(&self) -> Self {
+        let max = Size {
+            width: self.max.width,
+            height: self.max.height,
+        };
+        let min = Size {
+            width: self.min.width.max(0.0).min(max.width),
+            height: self.min.height.max(0.0).min(max.height),
+        };
+        Constraints { min, max }
+    }
 }

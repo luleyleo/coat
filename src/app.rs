@@ -1,3 +1,5 @@
+use shell::piet::RenderContext;
+
 use crate::{
     kurbo::Size,
     shell::{piet::Piet, Application, Region, WinHandler, WindowHandle},
@@ -38,7 +40,7 @@ impl WinHandler for App {
     fn prepare_paint(&mut self) {}
 
     fn paint(&mut self, piet: &mut Piet, invalid: &Region) {
-        self.tree.layout(self.size);
+        self.tree.layout(piet.text(), self.size);
         self.tree.paint(piet, invalid);
     }
 

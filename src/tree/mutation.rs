@@ -83,7 +83,51 @@ impl<'a> TreeMutation<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{elements::button, piet::Color};
+    use crate::piet::Color;
+
+    mod button {
+        use shell::piet::RenderContext;
+
+        use crate::{
+            constraints::Constraints,
+            kurbo::Size,
+            piet::{Color, Piet, PietText},
+            tree::{Content, Element},
+        };
+
+        pub struct ButtonElement {
+            pub color: Color,
+        }
+
+        impl Default for ButtonElement {
+            fn default() -> Self {
+                ButtonElement {
+                    color: Color::WHITE,
+                }
+            }
+        }
+
+        impl ButtonElement {
+            pub fn new(color: Color) -> Self {
+                ButtonElement { color }
+            }
+        }
+
+        impl Element for ButtonElement {
+            fn paint(&mut self, piet: &mut Piet, size: Size, _content: &mut Content) {
+                piet.fill(&size.to_rect(), &self.color);
+            }
+
+            fn layout(
+                &mut self,
+                constraints: &Constraints,
+                _: &mut Content,
+                _: &mut PietText,
+            ) -> Size {
+                constraints.max
+            }
+        }
+    }
 
     #[test]
     fn single_insert() {
