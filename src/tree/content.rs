@@ -1,5 +1,8 @@
+use shell::kurbo::Rect;
+
 use crate::{
     constraints::Constraints,
+    event::Event,
     kurbo::{Affine, Point, Size},
     piet::{Piet, PietText, RenderContext},
     tree::{subtree_range, Entry, Node},
@@ -39,6 +42,38 @@ impl<'a> MutTreeNode<'a> {
             Ok(())
         })
         .unwrap();
+    }
+
+    pub fn event(&mut self, event: &Event, handled: &mut bool) {
+        if !*handled {
+            let MutTreeNode { node, tree } = self;
+            let rect = Rect::from_origin_size(node.position, node.size);
+
+            let recurse = match event {
+                Event::MouseMove(mouse_event) if rect.contains(mouse_event.pos) => {
+                    let mut mouse_event = mouse_event.clone();
+                    mouse_event.pos -= node.position.to_vec2();
+                    Some(Event::MouseMove(mouse_event))
+                }
+                Event::MouseDown(mouse_event) if rect.contains(mouse_event.pos) => {
+                    let mut mouse_event = mouse_event.clone();
+                    mouse_event.pos -= node.position.to_vec2();
+                    Some(Event::MouseDown(mouse_event))
+                }
+                Event::MouseUp(mouse_event) if rect.contains(mouse_event.pos) => {
+                    let mut mouse_event = mouse_event.clone();
+                    mouse_event.pos -= node.position.to_vec2();
+                    Some(Event::MouseUp(mouse_event))
+                }
+                _ => None,
+            };
+
+            if let Some(event) = &recurse {
+                let children = &node.children;
+                let content = &mut Content { tree, children };
+                node.element.event(event, handled, content);
+            }
+        }
     }
 }
 

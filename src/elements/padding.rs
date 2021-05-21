@@ -1,5 +1,6 @@
 use crate::{
     constraints::Constraints,
+    event::Event,
     kurbo::{Insets, Point, Size},
     piet::{Piet, PietText},
     tree::{Content, Element},
@@ -31,6 +32,12 @@ impl Element for Padding {
             child.set_origin(offset);
         }
         constraints.max
+    }
+
+    fn event(&mut self, event: &Event, handled: &mut bool, content: &mut Content) {
+        for mut child in content.iter_mut() {
+            child.event(event, handled);
+        }
     }
 }
 

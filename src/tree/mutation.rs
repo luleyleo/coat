@@ -126,6 +126,14 @@ mod tests {
             ) -> Size {
                 constraints.max
             }
+
+            fn event(
+                &mut self,
+                _event: &crate::event::Event,
+                _handled: &mut bool,
+                _content: &mut Content,
+            ) {
+            }
         }
     }
 

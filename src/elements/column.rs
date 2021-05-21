@@ -1,5 +1,6 @@
 use crate::{
     constraints::Constraints,
+    event::Event,
     kurbo::{Point, Size},
     piet::{Piet, PietText},
     tree::{Content, Element},
@@ -29,6 +30,12 @@ impl Element for ColumnElement {
             child.set_origin(Point::new(0.0, height_per_child * index as f64));
         }
         constraints.max
+    }
+
+    fn event(&mut self, event: &Event, handled: &mut bool, content: &mut Content) {
+        for mut child in content.iter_mut() {
+            child.event(event, handled);
+        }
     }
 }
 

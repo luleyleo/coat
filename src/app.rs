@@ -1,5 +1,7 @@
-use shell::piet::RenderContext;
-
+use crate::{
+    event::{Event, MouseEvent},
+    piet::RenderContext,
+};
 use crate::{
     kurbo::Size,
     shell::{piet::Piet, Application, Region, WinHandler, WindowHandle},
@@ -58,5 +60,23 @@ impl WinHandler for App {
 
     fn destroy(&mut self) {
         Application::global().quit();
+    }
+
+    fn mouse_move(&mut self, event: &shell::MouseEvent) {
+        let coat_event = Event::MouseMove(MouseEvent::from(event));
+        self.tree.event(coat_event);
+        self.handle.invalidate();
+    }
+
+    fn mouse_down(&mut self, event: &shell::MouseEvent) {
+        let coat_event = Event::MouseDown(MouseEvent::from(event));
+        self.tree.event(coat_event);
+        self.handle.invalidate();
+    }
+
+    fn mouse_up(&mut self, event: &shell::MouseEvent) {
+        let coat_event = Event::MouseUp(MouseEvent::from(event));
+        self.tree.event(coat_event);
+        self.handle.invalidate();
     }
 }

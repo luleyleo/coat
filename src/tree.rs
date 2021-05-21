@@ -1,5 +1,6 @@
 use crate::{
     constraints::Constraints,
+    event::Event,
     kurbo::Size,
     piet::{Color, Piet, PietText, RenderContext},
     shell::Region,
@@ -24,6 +25,8 @@ pub trait Element: AsAny {
         content: &mut Content,
         text: &mut PietText,
     ) -> Size;
+
+    fn event(&mut self, event: &Event, handled: &mut bool, content: &mut Content);
 }
 
 pub trait AsAny {
@@ -67,6 +70,15 @@ impl Tree {
         let children = &node.children;
         let content = &mut Content { tree, children };
         node.element.paint(piet, node.size, content);
+    }
+
+    pub fn event(&mut self, event: Event) {
+        let (node, tree) = self.content.split_first_mut().unwrap();
+        let node = node.as_mut_node();
+        let children = &node.children;
+        let content = &mut Content { tree, children };
+        let handled = &mut false;
+        node.element.event(&event, handled, content);
     }
 
     pub fn reconcile(&mut self) {
