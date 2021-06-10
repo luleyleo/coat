@@ -1,12 +1,13 @@
 use crate::{
     constraints::Constraints,
+    context::ElementCtx,
     event::Event,
     kurbo::{RoundedRect, Size},
     piet::{
         Color, Piet, PietText, PietTextLayout, RenderContext, Text, TextAlignment, TextLayout,
         TextLayoutBuilder,
     },
-    tree::{Content, Element},
+    tree::{Content, Element, Handled},
     ui::Ui,
 };
 
@@ -19,22 +20,32 @@ pub struct ButtonElement {
 }
 
 impl Element for ButtonElement {
-    fn paint(&mut self, piet: &mut Piet, size: Size, _content: &mut Content) {
+    fn paint(&mut self, element: &mut ElementCtx, piet: &mut Piet, _content: &mut Content) {
         let layout = self.layout.as_ref().unwrap();
+        let size = element.size();
+
         let color = if self.pressed {
             Color::rgb(0.6, 0.6, 0.95)
         } else {
             Color::rgb(0.5, 0.5, 0.87)
         };
-        piet.fill(&RoundedRect::from_rect(size.to_rect(), 5.0), &color);
-        let offset = (
+
+        let text_offset = (
             (size.width - layout.size().width) / 2.0,
             (size.height - layout.size().height) / 2.0,
         );
-        piet.draw_text(layout, offset)
+
+        piet.fill(&RoundedRect::from_rect(size.to_rect(), 5.0), &color);
+        piet.draw_text(layout, text_offset)
     }
 
-    fn layout(&mut self, constraints: &Constraints, _: &mut Content, text: &mut PietText) -> Size {
+    fn layout(
+        &mut self,
+        _element: &mut ElementCtx,
+        constraints: &Constraints,
+        _content: &mut Content,
+        text: &mut PietText,
+    ) -> Size {
         if self.layout.is_none() {
             self.layout = Some(
                 text.new_text_layout(self.text.clone())
@@ -48,18 +59,24 @@ impl Element for ButtonElement {
         constraints.max
     }
 
-    fn event(&mut self, event: &Event, handled: &mut bool, _content: &mut Content) {
+    fn event(
+        &mut self,
+        element: &mut ElementCtx,
+        event: &Event,
+        _content: &mut Content,
+    ) -> Handled {
         match event {
             Event::MouseDown(_) => {
-                *handled |= true;
                 self.clicks += 1;
                 self.pressed = true;
-                println!("CLICKED");
+                element.request_im_pass();
+                Handled(true)
             }
             Event::MouseUp(_) => {
                 self.pressed = false;
+                Handled(true)
             }
-            _ => {}
+            _ => Handled(false),
         }
     }
 }

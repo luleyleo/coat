@@ -37,8 +37,13 @@ pub struct Node {
     pub key: Key,
     pub element: Box<dyn Element>,
     pub children: Vec<usize>,
+
     pub position: Point,
     pub size: Size,
+
+    pub requires_im_pass: bool,
+    pub requires_layout: bool,
+    pub requires_paint: bool,
 }
 
 impl Node {
@@ -47,8 +52,13 @@ impl Node {
             key,
             element,
             children: Vec::new(),
+
             position: Point::ZERO,
             size: Size::ZERO,
+
+            requires_im_pass: false,
+            requires_layout: true,
+            requires_paint: true,
         }
     }
 }

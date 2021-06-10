@@ -1,9 +1,10 @@
 use crate::{
     constraints::Constraints,
+    context::ElementCtx,
     event::Event,
     kurbo::{Insets, Point, Size},
     piet::{Piet, PietText},
-    tree::{Content, Element},
+    tree::{Content, Element, Handled},
     ui::Ui,
 };
 
@@ -13,7 +14,7 @@ pub struct Padding {
 }
 
 impl Element for Padding {
-    fn paint(&mut self, piet: &mut Piet, _size: Size, content: &mut Content) {
+    fn paint(&mut self, _element: &mut ElementCtx, piet: &mut Piet, content: &mut Content) {
         for mut child in content.iter_mut() {
             child.paint(piet);
         }
@@ -21,6 +22,7 @@ impl Element for Padding {
 
     fn layout(
         &mut self,
+        _element: &mut ElementCtx,
         constraints: &Constraints,
         content: &mut Content,
         text: &mut PietText,
@@ -34,10 +36,18 @@ impl Element for Padding {
         constraints.max
     }
 
-    fn event(&mut self, event: &Event, handled: &mut bool, content: &mut Content) {
+    fn event(
+        &mut self,
+        _element: &mut ElementCtx,
+        event: &Event,
+        content: &mut Content,
+    ) -> Handled {
         for mut child in content.iter_mut() {
-            child.event(event, handled);
+            if child.event(event).handled() {
+                return Handled(true);
+            }
         }
+        Handled(false)
     }
 }
 

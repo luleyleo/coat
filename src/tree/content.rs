@@ -2,12 +2,15 @@ use shell::kurbo::Rect;
 
 use crate::{
     constraints::Constraints,
+    context::ElementCtx,
     event::Event,
     kurbo::{Affine, Point, Size},
     piet::{Piet, PietText, RenderContext},
     tree::{subtree_range, Entry, Node},
 };
 use std::ops::{Index, IndexMut};
+
+use super::Handled;
 
 pub struct Content<'a> {
     pub(crate) tree: &'a mut [Entry],
@@ -26,9 +29,17 @@ impl<'a> MutTreeNode<'a> {
 
     pub fn layout(&mut self, constraints: &Constraints, text: &mut PietText) -> Size {
         let MutTreeNode { node, tree } = self;
+        node.requires_layout = false;
+
         let children = &node.children;
         let content = &mut Content { tree, children };
-        node.size = node.element.layout(constraints, content, text);
+        let element_ctx = &mut ElementCtx::from(&**node);
+
+        let old_size = node.size;
+        node.size = node.element.layout(element_ctx, constraints, content, text);
+        node.requires_paint |= old_size != node.size;
+        element_ctx.apply_to_node(node);
+
         node.size
     }
 
@@ -38,41 +49,53 @@ impl<'a> MutTreeNode<'a> {
             piet.transform(Affine::translate(node.position.to_vec2()));
             let children = &node.children;
             let content = &mut Content { tree, children };
-            node.element.paint(piet, node.size, content);
+
+            let element_ctx = &mut ElementCtx::from(&**node);
+            node.element.paint(element_ctx, piet, content);
+            element_ctx.apply_to_node(node);
+
             Ok(())
         })
         .unwrap();
     }
 
-    pub fn event(&mut self, event: &Event, handled: &mut bool) {
-        if !*handled {
-            let MutTreeNode { node, tree } = self;
-            let rect = Rect::from_origin_size(node.position, node.size);
+    pub fn event(&mut self, event: &Event) -> Handled {
+        let MutTreeNode { node, tree } = self;
+        let rect = Rect::from_origin_size(node.position, node.size);
 
-            let recurse = match event {
-                Event::MouseMove(mouse_event) if rect.contains(mouse_event.pos) => {
-                    let mut mouse_event = mouse_event.clone();
-                    mouse_event.pos -= node.position.to_vec2();
-                    Some(Event::MouseMove(mouse_event))
-                }
-                Event::MouseDown(mouse_event) if rect.contains(mouse_event.pos) => {
-                    let mut mouse_event = mouse_event.clone();
-                    mouse_event.pos -= node.position.to_vec2();
-                    Some(Event::MouseDown(mouse_event))
-                }
-                Event::MouseUp(mouse_event) if rect.contains(mouse_event.pos) => {
-                    let mut mouse_event = mouse_event.clone();
-                    mouse_event.pos -= node.position.to_vec2();
-                    Some(Event::MouseUp(mouse_event))
-                }
-                _ => None,
-            };
-
-            if let Some(event) = &recurse {
-                let children = &node.children;
-                let content = &mut Content { tree, children };
-                node.element.event(event, handled, content);
+        let event = match event {
+            Event::MouseMove(mouse_event) if rect.contains(mouse_event.pos) => {
+                let mut mouse_event = mouse_event.clone();
+                mouse_event.pos -= node.position.to_vec2();
+                Some(Event::MouseMove(mouse_event))
             }
+            Event::MouseMove(_) => None,
+            Event::MouseDown(mouse_event) if rect.contains(mouse_event.pos) => {
+                let mut mouse_event = mouse_event.clone();
+                mouse_event.pos -= node.position.to_vec2();
+                Some(Event::MouseDown(mouse_event))
+            }
+            Event::MouseDown(_) => None,
+            Event::MouseUp(mouse_event) if rect.contains(mouse_event.pos) => {
+                let mut mouse_event = mouse_event.clone();
+                mouse_event.pos -= node.position.to_vec2();
+                Some(Event::MouseUp(mouse_event))
+            }
+            Event::MouseUp(_) => None,
+            _ => Some(event.clone()),
+        };
+
+        if let Some(event) = event {
+            let children = &node.children;
+            let content = &mut Content { tree, children };
+
+            let element_ctx = &mut ElementCtx::from(&**node);
+            let handled = node.element.event(element_ctx, &event, content);
+            element_ctx.apply_to_node(node);
+
+            handled
+        } else {
+            Handled(false)
         }
     }
 }
@@ -86,14 +109,21 @@ impl<'a> Content<'a> {
         self.children.is_empty()
     }
 
-    pub fn get(&self, index: usize) -> Option<&Node> {
-        self.tree.get(self.children[index]).map(Entry::as_node)
-    }
+    pub fn get_mut(&mut self, index: usize) -> Option<MutTreeNode> {
+        if index >= self.children.len() {
+            return None;
+        }
 
-    pub fn get_mut(&mut self, index: usize) -> Option<&mut Node> {
-        self.tree
-            .get_mut(self.children[index])
-            .map(Entry::as_mut_node)
+        let child_index = self.children[index];
+        let child_tree_range = subtree_range(&self.tree, child_index);
+
+        let node = self.tree[child_index].as_mut_node();
+        let node = unsafe { &mut *(node as *mut Node) };
+
+        let tree = &mut self.tree[child_tree_range];
+        let tree = unsafe { &mut *(tree as *mut [Entry]) };
+
+        Some(MutTreeNode { node, tree })
     }
 
     pub fn iter_mut(&mut self) -> ContentIterMut<'_, 'a> {
