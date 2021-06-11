@@ -7,5 +7,6 @@ pub mod constraints;
 pub mod context;
 pub mod elements;
 pub mod event;
+pub mod testing;
 pub mod tree;
 pub mod ui;
