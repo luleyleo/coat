@@ -6,7 +6,7 @@ use crate::{
     piet::{Color, Piet, PietText, RenderContext},
     shell::Region,
 };
-use std::{any::Any, ops::Range};
+use std::any::Any;
 
 mod content;
 pub use content::Content;
@@ -137,24 +137,11 @@ impl Tree {
                 }
                 Entry::Begin(_) => depth += 1,
                 Entry::End if depth > 0 => depth -= 1,
-                Entry::End => break,
+                Entry::End => {
+                    node.length = index;
+                    break;
+                }
             }
         }
     }
-}
-
-pub fn subtree_range(tree: &[Entry], index: usize) -> Range<usize> {
-    assert!(matches!(tree[index], Entry::Begin(_)));
-
-    let mut depth = 0;
-    for (i, e) in tree[index..].iter().enumerate().skip(1) {
-        match e {
-            Entry::Begin(_) => depth += 1,
-            Entry::End if depth > 0 => depth -= 1,
-            Entry::End => {
-                return (index + 1)..(index + i);
-            }
-        }
-    }
-    unreachable!("subtree_range must only be called on valid trees");
 }

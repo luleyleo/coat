@@ -6,7 +6,7 @@ use crate::{
     event::Event,
     kurbo::{Affine, Point, Size},
     piet::{Piet, PietText, RenderContext},
-    tree::{subtree_range, Entry, Node},
+    tree::{Entry, Node},
 };
 use std::ops::{Index, IndexMut};
 
@@ -117,20 +117,19 @@ impl<'a> Content<'a> {
         }
 
         let child_index = self.children[index];
-        let child_tree_range = subtree_range(&self.tree, child_index);
+        let content_length = self.tree[child_index].as_node().length;
 
-        let node = self.tree[child_index].as_mut_node();
-        let node = unsafe { &mut *(node as *mut Node) };
-
-        let tree = &mut self.tree[child_tree_range];
-        let tree = unsafe { &mut *(tree as *mut [Entry]) };
+        let (head, tail) = self.tree.split_at_mut(child_index + 1);
+        let node = head[child_index].as_mut_node();
+        let tree = &mut tail[..content_length];
 
         Some(MutTreeNode { node, tree })
     }
 
-    pub fn iter_mut(&mut self) -> ContentIterMut<'_, 'a> {
+    pub fn iter_mut(&mut self) -> ContentIterMut {
         ContentIterMut {
-            content: self,
+            tree: self.tree,
+            children: self.children,
             next: 0,
         }
     }
@@ -150,29 +149,33 @@ impl<'a> IndexMut<usize> for Content<'a> {
     }
 }
 
-pub struct ContentIterMut<'a, 'c> {
-    content: &'a mut Content<'c>,
+pub struct ContentIterMut<'a> {
+    tree: &'a mut [Entry],
+    children: &'a [usize],
     next: usize,
 }
 
-impl<'a, 'c> Iterator for ContentIterMut<'a, 'c> {
+impl<'a> Iterator for ContentIterMut<'a> {
     type Item = MutTreeNode<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.next >= self.content.children.len() {
+        if self.next >= self.children.len() {
             return None;
         }
-
-        let child_index = self.content.children[self.next];
-        let child_tree_range = subtree_range(&self.content.tree, child_index);
-
-        let node = self.content.tree[child_index].as_mut_node();
-        let node = unsafe { &mut *(node as *mut Node) };
-
-        let tree = &mut self.content.tree[child_tree_range];
-        let tree = unsafe { &mut *(tree as *mut [Entry]) };
-
         self.next += 1;
+        let content_length = self.tree[0].as_node().length;
+
+        let (node_entry, tail_with_tree) = self.tree.split_first_mut().unwrap();
+        let (tree, tail) = tail_with_tree.split_at_mut(content_length);
+        let node = node_entry.as_mut_node();
+
+        // Break lifetime dependence on 'self
+        let node: &'a mut Node = unsafe { &mut *(node as *mut Node) };
+        let tree: &'a mut [Entry] = unsafe { &mut *(tree as *mut [Entry]) };
+        // Not sure why this one needs it as well
+        let tail: &'a mut [Entry] = unsafe { &mut *(tail as *mut [Entry]) };
+
+        self.tree = &mut tail[1..]; // exclude Entry::End from `node`
         Some(MutTreeNode { node, tree })
     }
 }
