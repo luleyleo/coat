@@ -82,8 +82,10 @@ impl Element for ButtonElement {
 }
 
 #[track_caller]
-pub fn button(ui: &mut Ui, text: &str) {
+pub fn button(ui: &mut Ui, text: &str) -> bool {
     let location = std::panic::Location::caller();
+    let mut clicks = 0;
+
     ui.add(
         location,
         |button: &mut ButtonElement| {
@@ -91,7 +93,16 @@ pub fn button(ui: &mut Ui, text: &str) {
                 button.text = text.to_string();
                 button.layout = None;
             }
+
+            clicks = button.clicks;
+            button.clicks = 0;
         },
         |_| {},
     );
+
+    if clicks > 0 {
+        ui.action_emitted();
+    }
+
+    clicks > 0
 }

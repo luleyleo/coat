@@ -9,8 +9,16 @@ use coat::{
 
 pub fn demo_app(ui: &mut Ui) {
     column(ui, |ui| {
-        padding(ui, 10.0, |ui| button(ui, "Hello"));
-        padding(ui, 10.0, |ui| button(ui, "World"));
+        padding(ui, 10.0, |ui| {
+            if button(ui, "Hello") {
+                println!("Hello");
+            }
+        });
+        padding(ui, 10.0, |ui| {
+            if button(ui, "World") {
+                println!("World");
+            }
+        });
     });
 }
 

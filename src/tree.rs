@@ -73,16 +73,22 @@ pub struct Tree {
 }
 
 impl Tree {
+    pub fn content(&mut self) -> Content {
+        Content {
+            tree: &mut self.content,
+            children: &[0],
+        }
+    }
+
     pub fn layout(&mut self, text: &mut PietText, window_size: Size) {
         let constraints = Constraints {
             min: window_size,
             max: window_size,
         };
-        let content = &mut Content {
-            tree: &mut self.content,
-            children: &vec![0],
-        };
+
+        let content = &mut self.content();
         let mut root = content.get_mut(0).unwrap();
+
         let content_size = root.layout(&constraints, text);
         assert_eq!(content_size, window_size);
     }
@@ -90,20 +96,16 @@ impl Tree {
     pub fn paint(&mut self, piet: &mut Piet, invalid: &Region) {
         piet.fill(&invalid.bounding_box(), &Color::BLACK);
 
-        let content = &mut Content {
-            tree: &mut self.content,
-            children: &vec![0],
-        };
+        let content = &mut self.content();
         let mut root = content.get_mut(0).unwrap();
+
         root.paint(piet);
     }
 
     pub fn event(&mut self, event: Event) {
-        let content = &mut Content {
-            tree: &mut self.content,
-            children: &vec![0],
-        };
+        let content = &mut self.content();
         let mut root = content.get_mut(0).unwrap();
+
         let _handled = root.event(&event);
     }
 

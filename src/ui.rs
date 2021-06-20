@@ -5,12 +5,14 @@ use crate::{
 
 pub struct Ui<'a> {
     mutation: TreeMutation<'a>,
+    pub(crate) action_emitted: bool,
 }
 
 impl<'a> Ui<'a> {
     pub fn new(tree: &'a mut Tree) -> Self {
         Ui {
             mutation: TreeMutation::new(tree),
+            action_emitted: false,
         }
     }
 
@@ -31,6 +33,10 @@ impl<'a> Ui<'a> {
             content(self);
             self.mutation.end_new();
         }
+    }
+
+    pub fn action_emitted(&mut self) {
+        self.action_emitted = true;
     }
 }
 

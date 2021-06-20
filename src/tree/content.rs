@@ -14,11 +14,11 @@ use super::Handled;
 
 pub struct Content<'a> {
     pub(crate) tree: &'a mut [Entry],
-    pub(crate) children: &'a Vec<usize>,
+    pub(crate) children: &'a [usize],
 }
 
 pub struct MutTreeNode<'a> {
-    node: &'a mut Node,
+    pub(crate) node: &'a mut Node,
     tree: &'a mut [Entry],
 }
 
