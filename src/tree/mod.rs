@@ -86,9 +86,7 @@ impl Tree {
                     depth += 1;
                     node.children.push(index);
                     Self::reconcile_subtree(&mut tree[index..]);
-                    node.requests.requires_im_pass |= child_node.requests.requires_im_pass;
-                    node.requests.requires_layout |= child_node.requests.requires_layout;
-                    node.requests.requires_paint |= child_node.requests.requires_paint;
+                    node.requests.merge(child_node.requests);
                 }
                 Entry::Begin(_) => depth += 1,
                 Entry::End if depth > 0 => depth -= 1,
