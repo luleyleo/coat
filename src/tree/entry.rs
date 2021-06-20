@@ -35,12 +35,18 @@ impl Entry {
 
 pub struct Node {
     pub key: Key,
-    pub element: Box<dyn Element>,
     pub children: Vec<usize>,
-
+    pub element: Box<dyn Element>,
+    pub state: NodeState,
+    pub requests: NodeRequests,
+}
+#[derive(Clone, Copy)]
+pub struct NodeState {
     pub position: Point,
     pub size: Size,
-
+}
+#[derive(Clone, Copy)]
+pub struct NodeRequests {
     pub requires_im_pass: bool,
     pub requires_layout: bool,
     pub requires_paint: bool,
@@ -52,13 +58,15 @@ impl Node {
             key,
             element,
             children: Vec::new(),
-
-            position: Point::ZERO,
-            size: Size::ZERO,
-
-            requires_im_pass: false,
-            requires_layout: true,
-            requires_paint: true,
+            state: NodeState {
+                position: Point::ZERO,
+                size: Size::ZERO,
+            },
+            requests: NodeRequests {
+                requires_im_pass: false,
+                requires_layout: true,
+                requires_paint: true,
+            },
         }
     }
 }

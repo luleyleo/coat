@@ -27,15 +27,15 @@ impl ElementCtx {
     }
 
     pub(crate) fn apply_to_node(&self, node: &mut Node) {
-        node.requires_im_pass |= self.requires_im_pass;
-        node.requires_layout |= self.requires_layout;
-        node.requires_paint |= self.requires_paint;
+        node.requests.requires_im_pass |= self.requires_im_pass;
+        node.requests.requires_layout |= self.requires_layout;
+        node.requests.requires_paint |= self.requires_paint;
     }
 }
 impl From<&Node> for ElementCtx {
     fn from(node: &Node) -> Self {
         ElementCtx {
-            size: node.size,
+            size: node.state.size,
             requires_im_pass: false,
             requires_layout: false,
             requires_paint: false,

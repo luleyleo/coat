@@ -24,29 +24,29 @@ pub struct MutTreeNode<'a> {
 
 impl<'a> MutTreeNode<'a> {
     pub fn set_origin(&mut self, origin: Point) {
-        self.node.position = origin;
+        self.node.state.position = origin;
     }
 
     pub fn layout(&mut self, constraints: &Constraints, text: &mut PietText) -> Size {
         let MutTreeNode { node, tree } = self;
-        node.requires_layout = false;
+        node.requests.requires_layout = false;
 
         let children = &node.children;
         let content = &mut Content { tree, children };
         let element_ctx = &mut ElementCtx::from(&**node);
 
-        let old_size = node.size;
-        node.size = node.element.layout(element_ctx, constraints, content, text);
-        node.requires_paint |= old_size != node.size;
+        let old_size = node.state.size;
+        node.state.size = node.element.layout(element_ctx, constraints, content, text);
+        node.requests.requires_paint |= old_size != node.state.size;
         element_ctx.apply_to_node(node);
 
-        node.size
+        node.state.size
     }
 
     pub fn paint(&mut self, piet: &mut Piet) {
         piet.with_save(|piet| {
             let MutTreeNode { node, tree } = self;
-            piet.transform(Affine::translate(node.position.to_vec2()));
+            piet.transform(Affine::translate(node.state.position.to_vec2()));
             let children = &node.children;
             let content = &mut Content { tree, children };
 
@@ -61,24 +61,26 @@ impl<'a> MutTreeNode<'a> {
 
     pub fn event(&mut self, event: &Event) -> Handled {
         let MutTreeNode { node, tree } = self;
-        let rect = Rect::from_origin_size(node.position, node.size);
+
+        let state = node.state;
+        let rect = Rect::from_origin_size(state.position, state.size);
 
         let event = match event {
             Event::MouseMove(mouse_event) if rect.contains(mouse_event.pos) => {
                 let mut mouse_event = mouse_event.clone();
-                mouse_event.pos -= node.position.to_vec2();
+                mouse_event.pos -= state.position.to_vec2();
                 Some(Event::MouseMove(mouse_event))
             }
             Event::MouseMove(_) => None,
             Event::MouseDown(mouse_event) if rect.contains(mouse_event.pos) => {
                 let mut mouse_event = mouse_event.clone();
-                mouse_event.pos -= node.position.to_vec2();
+                mouse_event.pos -= state.position.to_vec2();
                 Some(Event::MouseDown(mouse_event))
             }
             Event::MouseDown(_) => None,
             Event::MouseUp(mouse_event) if rect.contains(mouse_event.pos) => {
                 let mut mouse_event = mouse_event.clone();
-                mouse_event.pos -= node.position.to_vec2();
+                mouse_event.pos -= state.position.to_vec2();
                 Some(Event::MouseUp(mouse_event))
             }
             Event::MouseUp(_) => None,

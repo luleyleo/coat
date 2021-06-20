@@ -31,7 +31,7 @@ impl App {
         self.tree
             .content()
             .get_mut(0)
-            .map(|tree_node| tree_node.node.requires_im_pass)
+            .map(|tree_node| tree_node.node.requests.requires_im_pass)
             .unwrap_or(true)
     }
 
