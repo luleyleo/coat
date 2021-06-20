@@ -1,5 +1,5 @@
 use crate::{
-    tree::mutation::TreeMutation,
+    tree::TreeMutation,
     tree::{Element, Location, Tree},
 };
 

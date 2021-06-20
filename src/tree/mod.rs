@@ -1,12 +1,10 @@
 use crate::{
     constraints::Constraints,
-    context::ElementCtx,
     event::Event,
     kurbo::Size,
     piet::{Color, Piet, PietText, RenderContext},
     shell::Region,
 };
-use std::any::Any;
 
 mod content;
 pub use content::Content;
@@ -15,57 +13,14 @@ mod entry;
 pub use entry::Location;
 pub(crate) use entry::{Entry, Key, Node};
 
-pub(crate) mod mutation;
+mod handled;
+pub use handled::Handled;
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub struct Handled(pub bool);
-impl Handled {
-    pub fn handled(self) -> bool {
-        self.0
-    }
-}
-impl From<Handled> for bool {
-    fn from(h: Handled) -> Self {
-        h.0
-    }
-}
-impl From<bool> for Handled {
-    fn from(b: bool) -> Self {
-        Handled(b)
-    }
-}
-impl PartialEq<bool> for Handled {
-    fn eq(&self, other: &bool) -> bool {
-        self.0 == *other
-    }
-}
+mod element;
+pub use element::Element;
 
-pub trait Element: AsAny {
-    fn paint(&mut self, element: &mut ElementCtx, piet: &mut Piet, content: &mut Content);
-
-    fn layout(
-        &mut self,
-        element: &mut ElementCtx,
-        constraints: &Constraints,
-        content: &mut Content,
-        text: &mut PietText,
-    ) -> Size;
-
-    fn event(&mut self, element: &mut ElementCtx, event: &Event, content: &mut Content) -> Handled;
-}
-
-pub trait AsAny {
-    fn as_any(&self) -> &dyn Any;
-    fn as_mut_any(&mut self) -> &mut dyn Any;
-}
-impl<T: Any> AsAny for T {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-    fn as_mut_any(&mut self) -> &mut dyn Any {
-        self
-    }
-}
+mod mutation;
+pub(crate) use mutation::TreeMutation;
 
 #[derive(Default)]
 pub struct Tree {
