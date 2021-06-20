@@ -93,7 +93,7 @@ impl Tree {
                 Entry::Begin(_) => depth += 1,
                 Entry::End if depth > 0 => depth -= 1,
                 Entry::End => {
-                    node.length = index;
+                    node.content_length = index;
                     break;
                 }
             }

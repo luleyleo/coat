@@ -35,7 +35,7 @@ impl Entry {
 
 pub struct Node {
     pub key: Key,
-    pub length: usize,
+    pub content_length: usize,
     pub children: Vec<usize>,
     pub element: Box<dyn Element>,
     pub state: NodeState,
@@ -57,7 +57,7 @@ impl Node {
     pub fn new(key: Key, element: Box<dyn Element>) -> Self {
         Node {
             key,
-            length: 0,
+            content_length: 0,
             children: Vec::new(),
             element,
             state: NodeState {

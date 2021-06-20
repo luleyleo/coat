@@ -117,7 +117,7 @@ impl<'a> Content<'a> {
         }
 
         let child_index = self.children[index];
-        let content_length = self.tree[child_index].as_node().length;
+        let content_length = self.tree[child_index].as_node().content_length;
 
         let (head, tail) = self.tree.split_at_mut(child_index + 1);
         let node = head[child_index].as_mut_node();
@@ -163,7 +163,7 @@ impl<'a> Iterator for ContentIterMut<'a> {
             return None;
         }
         self.next += 1;
-        let content_length = self.tree[0].as_node().length;
+        let content_length = self.tree[0].as_node().content_length;
 
         let (node_entry, tail_with_tree) = self.tree.split_first_mut().unwrap();
         let (tree, tail) = tail_with_tree.split_at_mut(content_length);
